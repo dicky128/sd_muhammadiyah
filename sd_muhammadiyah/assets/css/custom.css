@@ -1,0 +1,508 @@
+/*
+ * assets/css/custom.css
+ * SD Muhammadiyah 1 Gentasari — Custom Styles
+ * Supplements Tailwind CDN; use this for PostCSS/build pipeline in production.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/* ══════════════════════════════════════════════════════════
+   1. CSS CUSTOM PROPERTIES (Design Tokens)
+══════════════════════════════════════════════════════════ */
+:root {
+  /* Gold palette */
+  --gold-300: #f0d898;
+  --gold-400: #e8c860;
+  --gold-500: #d4aa3a;
+  --gold-600: #b8921e;
+
+  /* Glass surfaces */
+  --glass-bg:         rgba(255,255,255,0.07);
+  --glass-bg-hover:   rgba(255,255,255,0.13);
+  --glass-bg-strong:  rgba(255,255,255,0.14);
+  --glass-bg-dark:    rgba(0,0,0,0.40);
+  --glass-border:     rgba(255,255,255,0.13);
+  --glass-border-strong: rgba(255,255,255,0.22);
+
+  /* Blur levels */
+  --blur-sm:  blur(8px) saturate(1.5);
+  --blur-md:  blur(16px) saturate(1.8);
+  --blur-lg:  blur(24px) saturate(2);
+
+  /* Typography */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, -apple-system, sans-serif;
+
+  /* Transitions */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast:   150ms;
+  --duration-normal: 280ms;
+  --duration-slow:   500ms;
+}
+
+/* ══════════════════════════════════════════════════════════
+   2. GLOBAL RESETS & BASE
+══════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background: #000;
+  color: #fff;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6,
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar            { width: 5px; height: 5px; }
+::-webkit-scrollbar-track      { background: #0a0a0a; }
+::-webkit-scrollbar-thumb      { background: var(--gold-500); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover{ background: var(--gold-400); }
+
+/* ══════════════════════════════════════════════════════════
+   3. GLASSMORPHISM COMPONENTS
+══════════════════════════════════════════════════════════ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+  border: 1px solid var(--glass-border-strong);
+}
+
+.glass-dark {
+  background: var(--glass-bg-dark);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.glass:hover {
+  background: var(--glass-bg-hover);
+}
+
+/* ══════════════════════════════════════════════════════════
+   4. GOLD SHIMMER TEXT
+══════════════════════════════════════════════════════════ */
+.text-gold-shimmer {
+  background: linear-gradient(
+    135deg,
+    #f0d898 0%,
+    #d4aa3a 40%,
+    #f0d898 70%,
+    #b8921e 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   5. HERO BACKGROUND
+══════════════════════════════════════════════════════════ */
+.hero-bg {
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(0,0,0,0.72) 0%,
+      rgba(0,0,0,0.45) 50%,
+      rgba(0,0,0,0.68) 100%
+    ),
+    var(--hero-image, url('https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1920&q=80'));
+  background-size: cover;
+  background-position: center 30%;
+  background-attachment: fixed;
+}
+
+.page-hero {
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(0,0,0,0.82) 0%,
+      rgba(0,0,0,0.55) 60%,
+      rgba(0,0,0,0.75) 100%
+    ),
+    url('https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1920&q=70');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* ══════════════════════════════════════════════════════════
+   6. NAVIGATION
+══════════════════════════════════════════════════════════ */
+.nav-link {
+  position: relative;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.82);
+  transition: color var(--duration-normal);
+  padding: 0.25rem 0;
+  text-decoration: none;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--gold-500);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.nav-link:hover           { color: #fff; }
+.nav-link:hover::after,
+.nav-link.active::after   { transform: scaleX(1); }
+.nav-link.active          { color: var(--gold-300); }
+
+/* Dropdown */
+.dropdown-menu {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: all 0.22s var(--ease-spring);
+  pointer-events: none;
+}
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Mobile menu slide */
+#mobile-menu {
+  transform: translateX(100%);
+  transition: transform 0.38s var(--ease-spring);
+}
+#mobile-menu.open { transform: translateX(0); }
+
+/* ══════════════════════════════════════════════════════════
+   7. SCROLL REVEAL
+══════════════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity  0.7s ease,
+    transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children */
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity  0.6s ease,
+    transform 0.6s ease;
+}
+.reveal-stagger.visible > *:nth-child(1) { transition-delay: 0.05s; opacity: 1; transform: none; }
+.reveal-stagger.visible > *:nth-child(2) { transition-delay: 0.12s; opacity: 1; transform: none; }
+.reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.19s; opacity: 1; transform: none; }
+.reveal-stagger.visible > *:nth-child(4) { transition-delay: 0.26s; opacity: 1; transform: none; }
+.reveal-stagger.visible > *:nth-child(5) { transition-delay: 0.33s; opacity: 1; transform: none; }
+.reveal-stagger.visible > *:nth-child(6) { transition-delay: 0.40s; opacity: 1; transform: none; }
+
+/* ══════════════════════════════════════════════════════════
+   8. BUTTONS
+══════════════════════════════════════════════════════════ */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-400));
+  color: #000;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    box-shadow var(--duration-normal) ease;
+}
+.btn-gold:hover {
+  transform: scale(1.04);
+  box-shadow: 0 12px 40px rgba(212,170,58,0.38);
+}
+
+.btn-glass {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  border-radius: 1rem;
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.875rem;
+  font-weight: 300;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--duration-normal),
+    transform var(--duration-normal) var(--ease-spring);
+}
+.btn-glass:hover {
+  background: var(--glass-bg-hover);
+  transform: scale(1.03);
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════════════════════
+   9. ANNOUNCEMENT BADGE "TERBARU"
+══════════════════════════════════════════════════════════ */
+.badge-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background: rgba(212,170,58,0.18);
+  border: 1px solid rgba(212,170,58,0.4);
+  color: var(--gold-300);
+  animation: badgePulse 2.5s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(212,170,58,0.45); }
+  50%       { box-shadow: 0 0 0 5px rgba(212,170,58,0);    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   10. CARD HOVER EFFECTS
+══════════════════════════════════════════════════════════ */
+.card-hover {
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    box-shadow var(--duration-normal) ease,
+    background var(--duration-normal) ease;
+}
+.card-hover:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  background: var(--glass-bg-hover) !important;
+}
+
+.card-hover-x {
+  transition: transform var(--duration-normal) ease, background var(--duration-normal) ease;
+}
+.card-hover-x:hover {
+  transform: translateX(6px);
+  background: var(--glass-bg-hover) !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   11. FORM INPUTS (public pages)
+══════════════════════════════════════════════════════════ */
+.input-public {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  transition:
+    background var(--duration-normal),
+    border-color var(--duration-normal),
+    box-shadow var(--duration-normal);
+}
+.input-public:focus {
+  outline: none;
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(212,170,58,0.55);
+  box-shadow: 0 0 0 3px rgba(212,170,58,0.12);
+}
+.input-public::placeholder { color: rgba(255,255,255,0.30); }
+.input-public option        { background: #1a1a1a; color: #fff; }
+
+/* ══════════════════════════════════════════════════════════
+   12. GALLERY LIGHTBOX
+══════════════════════════════════════════════════════════ */
+#lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+#lightbox.open { display: flex; }
+#lb-img {
+  max-height: 85vh;
+  max-width: 88vw;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+}
+
+/* ══════════════════════════════════════════════════════════
+   13. ORNAMENT DIVIDER
+══════════════════════════════════════════════════════════ */
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.ornament-divider::before,
+.ornament-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,170,58,0.45), transparent);
+}
+
+/* ══════════════════════════════════════════════════════════
+   14. PROSE CONTENT (announcement body)
+══════════════════════════════════════════════════════════ */
+.prose-custom h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; color: #fff; margin: 1.5rem 0 0.75rem; }
+.prose-custom h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 300; color: rgba(255,255,255,0.85); margin: 1.25rem 0 0.5rem; }
+.prose-custom p  { margin-bottom: 1rem; line-height: 1.85; }
+.prose-custom ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+.prose-custom ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+.prose-custom li { margin-bottom: 0.4rem; }
+.prose-custom a  { color: var(--gold-400); text-decoration: underline; text-underline-offset: 3px; }
+.prose-custom a:hover { color: var(--gold-300); }
+.prose-custom blockquote {
+  border-left: 3px solid var(--gold-500);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: rgba(255,255,255,0.5);
+  font-style: italic;
+}
+.prose-custom strong { color: rgba(255,255,255,0.9); font-weight: 500; }
+.prose-custom em { color: var(--gold-300); font-style: italic; }
+.prose-custom hr { border: none; height: 1px; background: rgba(255,255,255,0.08); margin: 2rem 0; }
+.prose-custom img { max-width: 100%; border-radius: 12px; margin: 1.5rem 0; }
+.prose-custom table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+.prose-custom th { padding: 0.75rem 1rem; background: rgba(212,170,58,0.1); border: 1px solid rgba(255,255,255,0.08); text-align: left; color: var(--gold-300); }
+.prose-custom td { padding: 0.75rem 1rem; border: 1px solid rgba(255,255,255,0.07); color: rgba(255,255,255,0.65); }
+.prose-custom tr:hover td { background: rgba(255,255,255,0.03); }
+
+/* ══════════════════════════════════════════════════════════
+   15. KEYFRAME LIBRARY
+══════════════════════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-14px); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-18px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+.animate-fade-up    { animation: fadeUp    0.7s ease forwards; }
+.animate-fade-in    { animation: fadeIn    0.6s ease forwards; }
+.animate-float      { animation: float     6s ease-in-out infinite; }
+.animate-scale-in   { animation: scaleIn   0.5s var(--ease-spring) forwards; }
+.animate-slide-down { animation: slideDown 0.35s var(--ease-spring) forwards; }
+.animate-modal-in   { animation: modalIn   0.3s var(--ease-spring) forwards; }
+
+/* ══════════════════════════════════════════════════════════
+   16. TICKET NUMBER STYLE
+══════════════════════════════════════════════════════════ */
+.ticket-no {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--gold-400);
+  background: rgba(212,170,58,0.08);
+  border: 1px solid rgba(212,170,58,0.2);
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   17. RESPONSIVE UTILITIES
+══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .hero-bg,
+  .page-hero { background-attachment: scroll !important; }
+}
+
+@media (max-width: 640px) {
+  .hero-bg,
+  .page-hero { background-attachment: scroll; }
+
+  h1.font-display { font-size: clamp(2.4rem, 10vw, 4rem); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   18. PRINT
+══════════════════════════════════════════════════════════ */
+@media print {
+  nav, footer, #mobile-menu, #menu-overlay { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .glass, .glass-strong, .glass-dark { background: #f5f5f5 !important; border: 1px solid #ddd !important; backdrop-filter: none !important; }
+}
