@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
     }
 }
 
-require_once ROOT_PATH . '/includes/header.php';
+require_once ROOT_PATH . '../../includes/header.php';
 try { $p = $profileData ?? db()->query("SELECT * FROM school_profile LIMIT 1")->fetch() ?: []; }
 catch(Exception $e){ $p=[]; }
 ?>
@@ -113,4 +113,4 @@ catch(Exception $e){ $p=[]; }
   </div>
 </main>
 
-<?php require_once ROOT_PATH . '/includes/footer.php'; ?>
+<?php require_once ROOT_PATH . '../../includes/footer.php'; ?>

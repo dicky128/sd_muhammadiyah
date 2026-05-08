@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../includes/config.php';
 $pageTitle  = 'Profil Sekolah';
 $activePage = 'sekolah';
-require_once ROOT_PATH . '/includes/header.php';
+require_once ROOT_PATH . '../../includes/header.php';
 
 try {
     $p = db()->query("SELECT * FROM school_profile LIMIT 1")->fetch() ?: [];
@@ -129,4 +129,4 @@ try {
   </div>
 </main>
 
-<?php require_once ROOT_PATH . '/includes/footer.php'; ?>
+<?php require_once ROOT_PATH . '../../includes/footer.php'; ?>

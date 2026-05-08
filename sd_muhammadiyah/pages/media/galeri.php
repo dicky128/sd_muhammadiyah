@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../includes/config.php';
 $pageTitle  = 'Galeri Foto';
 $activePage = 'galeri';
-require_once ROOT_PATH . '/includes/header.php';
+require_once ROOT_PATH . '../../includes/header.php';
 
 $catSlug = $_GET['cat'] ?? '';
 try {
@@ -115,4 +115,4 @@ document.getElementById('lightbox').addEventListener('click',e=>{if(e.target===d
 document.addEventListener('keydown',e=>{const lb=document.getElementById('lightbox');if(!lb.classList.contains('open'))return;if(e.key==='Escape')closeLightbox();if(e.key==='ArrowLeft')navLb(-1);if(e.key==='ArrowRight')navLb(1);});
 </script>
 
-<?php require_once ROOT_PATH . '/includes/footer.php'; ?>
+<?php require_once ROOT_PATH . '../../includes/footer.php'; ?>

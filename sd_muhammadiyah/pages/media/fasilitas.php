@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../includes/config.php';
 $pageTitle  = 'Fasilitas Sekolah';
 $activePage = 'fasilitas';
-require_once ROOT_PATH . '/includes/header.php';
+require_once ROOT_PATH . '../../includes/header.php';
 
 try {
     $facilities = db()->query("SELECT * FROM facilities ORDER BY sort_order,name")->fetchAll();
@@ -57,4 +57,4 @@ $condColor=['baik'=>'text-green-300 bg-green-500/15','cukup'=>'text-yellow-300 b
   </div>
 </main>
 
-<?php require_once ROOT_PATH . '/includes/footer.php'; ?>
+<?php require_once ROOT_PATH . '../../includes/footer.php'; ?>

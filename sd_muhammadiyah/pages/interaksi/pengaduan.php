@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verify_csrf()) {
     }
 }
 
-require_once ROOT_PATH . '/includes/header.php';
+require_once ROOT_PATH . '../../includes/header.php';
 ?>
 
 <main class="pt-20 min-h-screen bg-gradient-to-b from-black via-zinc-950 to-black">
@@ -188,4 +188,4 @@ require_once ROOT_PATH . '/includes/header.php';
   </div>
 </main>
 
-<?php require_once ROOT_PATH . '/includes/footer.php'; ?>
+<?php require_once ROOT_PATH . '../../includes/footer.php'; ?>

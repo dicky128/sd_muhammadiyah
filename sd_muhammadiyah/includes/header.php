@@ -27,6 +27,7 @@ try {
   <meta name="description" content="<?= e($pageDesc) ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -87,7 +88,7 @@ try {
 
           <div class="dropdown relative">
             <button class="nav-link flex items-center gap-1 <?= in_array($activePage,['sekolah','guru','siswa'])?'active':'' ?>">Profil <i data-lucide="chevron-down" class="w-3 h-3 opacity-60 mt-0.5"></i></button>
-            <div class="dropdown-menu absolute top-full left-1/2 -translate-x-1/2 mt-3 w-48">
+            <div class="dropdown-menu absolute top-full right-0 mt-3 w-48">
               <div class="glass-dark rounded-2xl overflow-hidden py-1 shadow-2xl">
                 <a href="<?= APP_URL ?>/pages/profile/sekolah.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all"><i data-lucide="building-2" class="w-4 h-4 text-gold-400"></i> Profil Sekolah</a>
                 <a href="<?= APP_URL ?>/pages/profile/guru-staff.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all"><i data-lucide="users" class="w-4 h-4 text-gold-400"></i> Guru &amp; Staff</a>
@@ -98,7 +99,7 @@ try {
 
           <div class="dropdown relative">
             <button class="nav-link flex items-center gap-1 <?= in_array($activePage,['galeri','fasilitas'])?'active':'' ?>">Media <i data-lucide="chevron-down" class="w-3 h-3 opacity-60 mt-0.5"></i></button>
-            <div class="dropdown-menu absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44">
+            <div class="dropdown-menu absolute top-full right-0 mt-3 w-44">
               <div class="glass-dark rounded-2xl overflow-hidden py-1 shadow-2xl">
                 <a href="<?= APP_URL ?>/pages/media/galeri.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all"><i data-lucide="image" class="w-4 h-4 text-gold-400"></i> Galeri Foto</a>
                 <a href="<?= APP_URL ?>/pages/media/fasilitas.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all"><i data-lucide="layout-grid" class="w-4 h-4 text-gold-400"></i> Fasilitas</a>
@@ -108,7 +109,7 @@ try {
 
           <div class="dropdown relative">
             <button class="nav-link flex items-center gap-1 <?= in_array($activePage,['ekskul','pengumuman'])?'active':'' ?>">Aktivitas <i data-lucide="chevron-down" class="w-3 h-3 opacity-60 mt-0.5"></i></button>
-            <div class="dropdown-menu absolute top-full left-1/2 -translate-x-1/2 mt-3 w-48">
+            <div class="dropdown-menu absolute top-full right-0 mt-3 w-48">
               <div class="glass-dark rounded-2xl overflow-hidden py-1 shadow-2xl">
                 <a href="<?= APP_URL ?>/pages/aktivitas/ekskul.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all"><i data-lucide="sparkles" class="w-4 h-4 text-gold-400"></i> Ekstrakurikuler</a>
                 <a href="<?= APP_URL ?>/pages/aktivitas/pengumuman.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all"><i data-lucide="bell" class="w-4 h-4 text-gold-400"></i> Pengumuman</a>
@@ -118,7 +119,7 @@ try {
 
           <div class="dropdown relative">
             <button class="nav-link flex items-center gap-1 <?= in_array($activePage,['pengaduan','kontak'])?'active':'' ?>">Interaksi <i data-lucide="chevron-down" class="w-3 h-3 opacity-60 mt-0.5"></i></button>
-            <div class="dropdown-menu absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44">
+            <div class="dropdown-menu absolute top-full right-0 mt-3 w-44">
               <div class="glass-dark rounded-2xl overflow-hidden py-1 shadow-2xl">
                 <a href="<?= APP_URL ?>/pages/interaksi/pengaduan.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all"><i data-lucide="message-square-warning" class="w-4 h-4 text-gold-400"></i> Pengaduan</a>
                 <a href="<?= APP_URL ?>/pages/interaksi/kontak.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all"><i data-lucide="mail" class="w-4 h-4 text-gold-400"></i> Kontak</a>

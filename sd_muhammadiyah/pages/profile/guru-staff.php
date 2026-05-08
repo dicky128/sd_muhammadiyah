@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../includes/config.php';
 $pageTitle  = 'Guru & Staff';
 $activePage = 'guru';
-require_once ROOT_PATH . '/includes/header.php';
+require_once ROOT_PATH . '../../includes/header.php';
 
 try {
     $teachers = db()->query("SELECT * FROM teachers WHERE is_active=1 AND type='guru' ORDER BY sort_order,full_name")->fetchAll();
@@ -78,4 +78,4 @@ function renderCard(array $t, string $uploadUrl): void { ?>
   </div>
 </main>
 
-<?php require_once ROOT_PATH . '/includes/footer.php'; ?>
+<?php require_once ROOT_PATH . '../../includes/footer.php'; ?>

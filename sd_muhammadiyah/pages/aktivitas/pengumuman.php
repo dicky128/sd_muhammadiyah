@@ -13,7 +13,7 @@ if ($id) {
     } catch(Exception $e){ $ann=null; }
 
     $pageTitle = $ann ? $ann['title'] : '404';
-    require_once ROOT_PATH . '/includes/header.php';
+    require_once ROOT_PATH . '../../includes/header.php';
 
     if (!$ann): ?>
     <main class="pt-36 min-h-screen flex items-center justify-center bg-black">
@@ -50,7 +50,7 @@ if ($id) {
       </article>
     </main>
     <?php endif;
-    require_once ROOT_PATH . '/includes/footer.php';
+    require_once ROOT_PATH . '../../includes/footer.php';
     exit;
 } // end single view
 
@@ -74,7 +74,7 @@ try {
     $stmt->execute($params); $anns=$stmt->fetchAll();
 } catch(Exception $e){ $anns=[]; $total=0; $totalPages=1; }
 
-require_once ROOT_PATH . '/includes/header.php';
+require_once ROOT_PATH . '../../includes/header.php';
 
 $catColor=['penting'=>'text-red-300 bg-red-500/15','akademik'=>'text-blue-300 bg-blue-500/15','kegiatan'=>'text-green-300 bg-green-500/15','umum'=>'text-white/40 bg-white/5'];
 ?>
@@ -140,4 +140,4 @@ $catColor=['penting'=>'text-red-300 bg-red-500/15','akademik'=>'text-blue-300 bg
   </div>
 </main>
 
-<?php require_once ROOT_PATH . '/includes/footer.php'; ?>
+<?php require_once ROOT_PATH . '../../includes/footer.php'; ?>

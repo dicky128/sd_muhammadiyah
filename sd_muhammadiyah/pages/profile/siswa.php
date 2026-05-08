@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../includes/config.php';
 $pageTitle  = 'Data Siswa';
 $activePage = 'siswa';
-require_once ROOT_PATH . '/includes/header.php';
+require_once ROOT_PATH . '../../includes/header.php';
 
 try {
     $latestYear = db()->query("SELECT MAX(academic_year) FROM student_stats")->fetchColumn();
@@ -100,4 +100,4 @@ $levelColor = ['sekolah'=>'text-white/40 bg-white/5','kecamatan'=>'text-blue-300
   </div>
 </main>
 
-<?php require_once ROOT_PATH . '/includes/footer.php'; ?>
+<?php require_once ROOT_PATH . '../../includes/footer.php'; ?>

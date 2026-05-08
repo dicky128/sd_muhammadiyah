@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../includes/config.php';
 $pageTitle  = 'Ekstrakurikuler';
 $activePage = 'ekskul';
-require_once ROOT_PATH . '/includes/header.php';
+require_once ROOT_PATH . '../../includes/header.php';
 
 try {
     $ekskuls = db()->query("SELECT * FROM extracurricular WHERE is_active=1 ORDER BY sort_order,name")->fetchAll();
@@ -53,4 +53,4 @@ try {
   </div>
 </main>
 
-<?php require_once ROOT_PATH . '/includes/footer.php'; ?>
+<?php require_once ROOT_PATH . '../../includes/footer.php'; ?>

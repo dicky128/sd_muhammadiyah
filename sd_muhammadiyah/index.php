@@ -522,7 +522,7 @@ $siteName  = $profile['school_name'] ?? APP_NAME;
       <h2 class="font-display text-4xl lg:text-5xl font-light text-white">Landasan <em class="text-gold-shimmer not-italic">Kami</em></h2>
     </div>
 
-    <div class="grid lg:grid-cols-2 gap-8">
+    <div class="grid lg:grid-cols-1 gap-8">
       <!-- Visi -->
       <div class="glass rounded-3xl p-8 lg:p-10 reveal group hover:bg-white/10 transition-all duration-500 hover:-translate-y-1">
         <div class="flex items-start gap-5">
@@ -696,95 +696,7 @@ $siteName  = $profile['school_name'] ?? APP_NAME;
 <!-- ============================================================
      FOOTER
 ============================================================ -->
-<footer class="bg-black border-t border-white/[0.06]">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
-      <!-- Brand -->
-      <div class="lg:col-span-2">
-        <div class="flex items-center gap-3 mb-5">
-          <div class="w-10 h-10 rounded-xl glass-strong flex items-center justify-center">
-            <span class="text-gold-400 font-display font-bold text-lg">ص</span>
-          </div>
-          <div>
-            <div class="text-white font-medium text-sm">SD Muhammadiyah 1</div>
-            <div class="text-gold-400 text-[10px] tracking-widest uppercase font-light">Gentasari · Cilacap</div>
-          </div>
-        </div>
-        <p class="text-white/35 font-light text-sm leading-relaxed max-w-xs">
-          <?= e($profile['visi'] ? substr($profile['visi'], 0, 100) . '…' : 'Menjadi sekolah Islam unggulan yang membentuk generasi cerdas berkarakter.') ?>
-        </p>
-        <?php if (!empty($profile['instagram']) || !empty($profile['facebook'])): ?>
-        <div class="flex gap-3 mt-5">
-          <?php if (!empty($profile['instagram'])): ?>
-          <a href="<?= e($profile['instagram']) ?>" target="_blank"
-             class="w-9 h-9 glass rounded-xl flex items-center justify-center hover:bg-white/15 transition-all hover:scale-110">
-            <i data-lucide="instagram" class="w-4 h-4 text-white/60"></i>
-          </a>
-          <?php endif; ?>
-          <?php if (!empty($profile['facebook'])): ?>
-          <a href="<?= e($profile['facebook']) ?>" target="_blank"
-             class="w-9 h-9 glass rounded-xl flex items-center justify-center hover:bg-white/15 transition-all hover:scale-110">
-            <i data-lucide="facebook" class="w-4 h-4 text-white/60"></i>
-          </a>
-          <?php endif; ?>
-        </div>
-        <?php endif; ?>
-      </div>
-
-      <!-- Quick links -->
-      <div>
-        <h4 class="text-white/80 text-xs tracking-[0.2em] uppercase mb-5 font-medium">Navigasi</h4>
-        <ul class="space-y-3 text-sm">
-          <?php foreach ([
-            ['pages/profile/sekolah.php','Profil Sekolah'],
-            ['pages/profile/guru-staff.php','Guru & Staff'],
-            ['pages/media/galeri.php','Galeri'],
-            ['pages/aktivitas/pengumuman.php','Pengumuman'],
-            ['pages/interaksi/kontak.php','Kontak'],
-          ] as $link): ?>
-          <li><a href="<?= $link[0] ?>" class="text-white/35 hover:text-gold-300 transition-colors flex items-center gap-2">
-            <i data-lucide="chevron-right" class="w-3 h-3"></i><?= e($link[1]) ?>
-          </a></li>
-          <?php endforeach; ?>
-        </ul>
-      </div>
-
-      <!-- Contact -->
-      <div>
-        <h4 class="text-white/80 text-xs tracking-[0.2em] uppercase mb-5 font-medium">Kontak</h4>
-        <ul class="space-y-4 text-sm">
-          <?php if (!empty($profile['address'])): ?>
-          <li class="flex gap-3 text-white/35">
-            <i data-lucide="map-pin" class="w-4 h-4 text-gold-400/60 flex-shrink-0 mt-0.5"></i>
-            <span class="leading-relaxed"><?= e($profile['address']) ?>, <?= e($profile['village'] ?? '') ?>, <?= e($profile['city'] ?? '') ?></span>
-          </li>
-          <?php endif; ?>
-          <?php if (!empty($profile['phone'])): ?>
-          <li class="flex gap-3 text-white/35">
-            <i data-lucide="phone" class="w-4 h-4 text-gold-400/60 flex-shrink-0"></i>
-            <span><?= e($profile['phone']) ?></span>
-          </li>
-          <?php endif; ?>
-          <?php if (!empty($profile['email'])): ?>
-          <li class="flex gap-3 text-white/35">
-            <i data-lucide="mail" class="w-4 h-4 text-gold-400/60 flex-shrink-0"></i>
-            <span><?= e($profile['email']) ?></span>
-          </li>
-          <?php endif; ?>
-        </ul>
-      </div>
-    </div>
-
-    <div class="mt-14 pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4">
-      <p class="text-white/20 text-xs">
-        &copy; <?= date('Y') ?> <?= e($siteName) ?>. All rights reserved.
-      </p>
-      <a href="admin/login.php" class="text-white/15 hover:text-white/40 transition-colors text-xs flex items-center gap-1.5">
-        <i data-lucide="lock" class="w-3 h-3"></i> Admin Panel
-      </a>
-    </div>
-  </div>
-</footer>
+<?php include 'includes/footer.php'; ?>
 
 <!-- ============================================================
      SCRIPTS
