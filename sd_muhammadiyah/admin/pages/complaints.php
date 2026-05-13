@@ -97,24 +97,23 @@ require_once __DIR__ . '/../includes/admin_head.php';
     <button onclick="closeMod()" class="w-9 h-9 glass rounded-xl flex items-center justify-center"><i data-lucide="x" style="width:15px;height:15px"></i></button>
   </div>
   <div id="m-body" class="px-7 py-5 space-y-4">
+    <div class="glass rounded-xl p-4"><div class="text-[10px] text-white/30 uppercase tracking-widest mb-1">Nama Pelapor</div><p id="m-name" class="text-sm text-white/80"></p></div>
     <div class="grid grid-cols-2 gap-4">
-      <div class="glass rounded-xl p-4"><div class="text-[10px] text-white/30 uppercase tracking-widest mb-1">Pelapor</div><p id="m-name" class="text-sm text-white/80"></p></div>
-      <div class="glass rounded-xl p-4"><div class="text-[10px] text-white/30 uppercase tracking-widest mb-1">Kontak</div><p id="m-contact" class="text-sm text-white/80"></p></div>
+      <div class="glass rounded-xl p-4"><div class="text-[10px] text-white/30 uppercase tracking-widest mb-1">Email</div><p id="m-mail" class="text-sm text-white/80"></p></div>
+      <div class="glass rounded-xl p-4"><div class="text-[10px] text-white/30 uppercase tracking-widest mb-1">Nomor HP</div><p id="m-phone" class="text-sm text-white/80"></p></div>
     </div>
     <div class="glass rounded-xl p-4"><div class="text-[10px] text-white/30 uppercase tracking-widest mb-1">Subjek</div><p id="m-subject" class="text-sm text-white/80"></p></div>
     <div class="glass rounded-xl p-4"><div class="text-[10px] text-white/30 uppercase tracking-widest mb-1">Isi Pengaduan</div><p id="m-message" class="text-sm text-white/65 leading-relaxed"></p></div>
     <form id="respond-form">
-      <input type="hidden" name="csrf_token" value="<?=$csrf?>"><input type="hidden" name="action" value="update_status"><input type="hidden" name="id" id="m-id">
-      <div class="grid grid-cols-2 gap-4">
-        <div><label class="block text-[10px] tracking-widest uppercase mb-1.5 text-white/30">Ubah Status</label>
-          <select name="status" id="m-status" class="input-g">
-            <option value="masuk">Masuk</option><option value="diproses">Diproses</option>
-            <option value="selesai">Selesai</option><option value="ditutup">Ditutup</option>
-          </select>
-        </div>
-        <div><label class="block text-[10px] tracking-widest uppercase mb-1.5 text-white/30">Catatan Admin</label>
-          <input type="text" name="admin_note" id="m-note" class="input-g" placeholder="Respons singkat…"></div>
+      <div><label class="block text-[10px] tracking-widest uppercase mb-1.5 text-white/30">Ubah Status</label>
+        <select name="status" id="m-status" class="input-g">
+          <option value="masuk">Masuk</option><option value="diproses">Diproses</option>
+          <option value="selesai">Selesai</option><option value="ditutup">Ditutup</option>
+        </select>
       </div>
+      <input type="hidden" name="csrf_token" value="<?=$csrf?>"><input type="hidden" name="action" value="update_status"><input type="hidden" name="id" id="m-id">
+      <div class="glass rounded-xl p-4"><div class="text-[10px] text-white/30 uppercase tracking-widest mb-1">Catatan Admin</div>
+          <input type="text" name="admin_note" id="m-note" class="input-g" placeholder="Respons singkat…"></div>
       <div class="flex justify-end gap-3 mt-4">
         <button type="button" onclick="closeMod()" class="px-5 py-2.5 glass rounded-xl text-sm text-white/60 hover:text-white transition-all">Tutup</button>
         <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-medium text-black flex items-center gap-2" style="background:linear-gradient(135deg,#d4aa3a,#e8c860)"><i data-lucide="check" style="width:14px;height:14px"></i> Simpan Respons</button>
@@ -133,7 +132,8 @@ async function viewComplaint(id){
   document.getElementById('m-ticket').textContent=d.ticket_no;
   document.getElementById('m-id').value=d.id;
   document.getElementById('m-name').textContent=d.name;
-  document.getElementById('m-contact').textContent=(d.email||'')+(d.phone?' · '+d.phone:'');
+  document.getElementById('m-mail').textContent=(d.email||'');
+  document.getElementById('m-phone').textContent=(d.phone||'');
   document.getElementById('m-subject').textContent=d.subject;
   document.getElementById('m-message').textContent=d.message;
   document.getElementById('m-status').value=d.status;

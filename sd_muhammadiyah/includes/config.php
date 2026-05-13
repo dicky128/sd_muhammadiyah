@@ -4,9 +4,15 @@
 // ============================================================
 
 // ---- Environment ----
-define('APP_ENV', 'development'); // 'production' in prod
+define('APP_ENV', 'development'); 
 define('APP_NAME', 'SD Muhammadiyah 1 Gentasari');
-define('APP_URL', 'http://localhost:8080/sd_muhammadiyah');
+
+// Solusi Auto-Detect URL agar port tidak bentrok
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
+$host     = $_SERVER['HTTP_HOST']; // Mengambil localhost:8080 secara otomatis
+$baseDir  = '/sd_muhammadiyah';    // Folder proyek Anda di htdocs
+
+define('APP_URL', $protocol . "://" . $host . $baseDir);
 define('APP_VERSION', '1.0.0');
 
 // ---- Database ----
@@ -18,7 +24,7 @@ define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');
 
 // ---- Paths ----
-define('ROOT_PATH', dirname(__FILE__));
+define('ROOT_PATH', dirname(__FILE__) . '/');
 define('UPLOAD_PATH', ROOT_PATH . '/assets/images/uploads/');
 define('UPLOAD_URL',  APP_URL . '/assets/images/uploads/');
 
@@ -136,4 +142,9 @@ function uploadFile(array $file, string $dir = ''): string|false {
     $dest = UPLOAD_PATH . ($dir ? $dir . '/' : '') . $name;
     if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0755, true);
     return move_uploaded_file($file['tmp_name'], $dest) ? $name : false;
+}
+
+// Auto-load extended helper library
+if (file_exists(ROOT_PATH . 'functions.php') && !function_exists('formatDate')) {
+    require_once ROOT_PATH . 'functions.php';
 }

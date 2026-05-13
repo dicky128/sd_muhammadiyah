@@ -1,630 +1,364 @@
 <?php
 require_once __DIR__ . '/includes/config.php';
-
-// ---- Fetch dynamic data ----
 try {
-    $profile     = db()->query("SELECT * FROM school_profile LIMIT 1")->fetch() ?: [];
-    $heroTitle   = setting('hero_title', 'Sekolah Dasar Islam Unggulan');
-    $heroSub     = setting('hero_subtitle', 'Membentuk Generasi Cerdas Berakhlak Mulia');
-    $statStudents = setting('stats_students', '380');
-    $statTeachers = setting('stats_teachers', '24');
-    $statYears    = setting('stats_years', '62');
-    $statEkskul   = setting('stats_ekskul', '12');
+    $profile       = db()->query("SELECT * FROM school_profile LIMIT 1")->fetch() ?: [];
+    $announcements = db()->query("SELECT * FROM announcements WHERE is_published=1 ORDER BY is_pinned DESC, published_at DESC LIMIT 4")->fetchAll();
+    $facilities    = db()->query("SELECT * FROM facilities WHERE `condition`='baik' ORDER BY sort_order LIMIT 6")->fetchAll();
+    $ekskuls       = db()->query("SELECT * FROM extracurricular WHERE is_active=1 ORDER BY sort_order LIMIT 6")->fetchAll();
+} catch (Exception $e) { $profile=$announcements=$facilities=$ekskuls=[]; }
 
-    $announcements = db()->query(
-        "SELECT * FROM announcements 
-         WHERE is_published = 1 
-         ORDER BY is_pinned DESC, published_at DESC 
-         LIMIT 4"
-    )->fetchAll();
+$siteName     = $profile['school_name'] ?? APP_NAME;
+$heroTitle    = setting('hero_title','Sekolah Dasar Islam Unggulan');
+$heroSub      = setting('hero_subtitle','Membentuk Generasi Cerdas Berakhlak Mulia');
+$statStudents = setting('stats_students','380');
+$statTeachers = setting('stats_teachers','24');
+$statYears    = setting('stats_years','62');
+$statEkskul   = setting('stats_ekskul','12');
+$logoSrc      = !empty($profile['logo']) ? UPLOAD_URL.'logos/'.$profile['logo'] : null;
 
-    $achievements = db()->query(
-        "SELECT * FROM student_achievements ORDER BY year DESC LIMIT 3"
-    )->fetchAll();
-
-    $facilities = db()->query(
-        "SELECT * FROM facilities WHERE `condition` = 'baik' ORDER BY sort_order LIMIT 6"
-    )->fetchAll();
-
-    $ekskuls = db()->query(
-        "SELECT * FROM extracurricular WHERE is_active = 1 ORDER BY sort_order LIMIT 6"
-    )->fetchAll();
-} catch (Exception $e) {
-    // Graceful fallback — site works even without DB during dev
-    $profile = $announcements = $achievements = $facilities = $ekskuls = [];
-    $heroTitle = 'Sekolah Dasar Islam Unggulan';
-    $heroSub   = 'Membentuk Generasi Cerdas Berakhlak Mulia';
-    $statStudents = '380'; $statTeachers = '24'; $statYears = '62'; $statEkskul = '12';
+// Hero image: check settings table first, then school_profile table
+$heroImageFile = setting('hero_image');
+if ($heroImageFile) {
+    // settings table stores just filename, saved to heroes/ subdir
+    $heroImageUrl = UPLOAD_URL.'heroes/'.$heroImageFile;
+} elseif (!empty($profile['hero_image'])) {
+    // school_profile table also has hero_image column
+    $heroImageUrl = UPLOAD_URL.'heroes/'.$profile['hero_image'];
+} else {
+    $heroImageUrl = null;
 }
-
-$heroImage = !empty($profile['hero_image']) ? UPLOAD_URL . $profile['hero_image'] 
-           : 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1920&q=80';
-$logo      = !empty($profile['logo']) ? UPLOAD_URL . $profile['logo'] : null;
-$siteName  = $profile['school_name'] ?? APP_NAME;
+$catLabel     = ['penting'=>'section-label-pink','akademik'=>'section-label-sky','kegiatan'=>'section-label-gold','umum'=>'section-label-gold'];
 ?>
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= e($siteName) ?> — Official Website</title>
-  <meta name="description" content="<?= e($heroSub) ?>">
-
-  <!-- Fonts: Cormorant Garamond (display) + DM Sans (body) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
-            body:    ['"DM Sans"', 'system-ui', 'sans-serif'],
-          },
-          colors: {
-            gold: {
-              300: '#f0d898',
-              400: '#e8c860',
-              500: '#d4aa3a',
-              600: '#b8921e',
-            },
-            glass: {
-              DEFAULT: 'rgba(255,255,255,0.07)',
-              hover:   'rgba(255,255,255,0.13)',
-              border:  'rgba(255,255,255,0.15)',
-              strong:  'rgba(255,255,255,0.18)',
-            }
-          },
-          backdropBlur: { xs: '2px' },
-          animation: {
-            'fade-up':   'fadeUp 0.7s ease forwards',
-            'fade-in':   'fadeIn 0.6s ease forwards',
-            'slide-down':'slideDown 0.35s cubic-bezier(.16,1,.3,1) forwards',
-            'float':     'float 6s ease-in-out infinite',
-            'pulse-slow':'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite',
-          },
-          keyframes: {
-            fadeUp:    { from:{ opacity:'0', transform:'translateY(28px)' }, to:{ opacity:'1', transform:'translateY(0)' } },
-            fadeIn:    { from:{ opacity:'0' }, to:{ opacity:'1' } },
-            slideDown: { from:{ opacity:'0', transform:'translateY(-10px)' }, to:{ opacity:'1', transform:'translateY(0)' } },
-            float:     { '0%,100%':{ transform:'translateY(0)' }, '50%':{ transform:'translateY(-14px)' } },
-          }
-        }
-      }
-    }
-  </script>
-
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <!-- SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
-
-  <style>
-    :root { --gold: #d4aa3a; --glass: rgba(255,255,255,0.07); }
-
-    * { font-family: 'DM Sans', sans-serif; }
-    h1, h2, .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
-
-    /* ── Scrollbar ─────────────────────────────────────── */
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #0a0a0a; }
-    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 99px; }
-
-    /* ── Glass utility ─────────────────────────────────── */
-    .glass {
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(16px) saturate(1.8);
-      -webkit-backdrop-filter: blur(16px) saturate(1.8);
-      border: 1px solid rgba(255,255,255,0.13);
-    }
-    .glass-strong {
-      background: rgba(255,255,255,0.14);
-      backdrop-filter: blur(24px) saturate(2);
-      -webkit-backdrop-filter: blur(24px) saturate(2);
-      border: 1px solid rgba(255,255,255,0.22);
-    }
-    .glass-dark {
-      background: rgba(0,0,0,0.35);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    /* ── Hero Parallax Background ──────────────────────── */
-    .hero-bg {
-      background-image: 
-        linear-gradient(135deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.68) 100%),
-        url('<?= $heroImage ?>');
-      background-size: cover;
-      background-position: center 30%;
-      background-attachment: fixed;
-    }
-
-    /* ── Gold shimmer text ─────────────────────────────── */
-    .text-gold-shimmer {
-      background: linear-gradient(135deg, #f0d898 0%, #d4aa3a 40%, #f0d898 70%, #b8921e 100%);
-      background-size: 200% 100%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: shimmer 4s linear infinite;
-    }
-    @keyframes shimmer { to { background-position: -200% 0; } }
-
-    /* ── Divider ornament ──────────────────────────────── */
-    .ornament-divider::before,
-    .ornament-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(212,170,58,0.5), transparent);
-    }
-
-    /* ── Nav link ──────────────────────────────────────── */
-    .nav-link {
-      position: relative;
-      font-size: 0.8rem;
-      letter-spacing: 0.1em;
-      font-weight: 400;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.82);
-      transition: color 0.25s;
-      padding: 0.25rem 0;
-    }
-    .nav-link::after {
-      content: '';
-      position: absolute;
-      bottom: -2px; left: 0; right: 0;
-      height: 1px;
-      background: var(--gold);
-      transform: scaleX(0);
-      transform-origin: center;
-      transition: transform 0.3s cubic-bezier(.16,1,.3,1);
-    }
-    .nav-link:hover { color: #fff; }
-    .nav-link:hover::after,
-    .nav-link.active::after { transform: scaleX(1); }
-    .nav-link.active { color: #f0d898; }
-
-    /* ── Dropdown ──────────────────────────────────────── */
-    .dropdown-menu {
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(6px);
-      transition: all 0.22s cubic-bezier(.16,1,.3,1);
-    }
-    .dropdown:hover .dropdown-menu,
-    .dropdown:focus-within .dropdown-menu {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    /* ── Stat counter card ─────────────────────────────── */
-    .stat-card {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .stat-card:hover {
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 0 20px 60px rgba(212,170,58,0.15);
-    }
-
-    /* ── Section entry animation ───────────────────────── */
-    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    /* ── Mobile menu ───────────────────────────────────── */
-    #mobile-menu {
-      transform: translateX(100%);
-      transition: transform 0.38s cubic-bezier(.16,1,.3,1);
-    }
-    #mobile-menu.open { transform: translateX(0); }
-
-    /* ── Announcement badge ────────────────────────────── */
-    .badge-new {
-      animation: badgePulse 2s ease-in-out infinite;
-    }
-    @keyframes badgePulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(212,170,58,0.5); }
-      50%      { box-shadow: 0 0 0 6px rgba(212,170,58,0); }
-    }
-
-    /* ── Announcement card hover ───────────────────────── */
-    .ann-card { transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease; }
-    .ann-card:hover { transform: translateX(6px); background: rgba(255,255,255,0.13) !important; }
-  </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="<?= e($heroSub) ?>">
+<title><?= e($siteName) ?> — Website Resmi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{fontFamily:{display:['"Playfair Display"','serif'],body:['"Plus Jakarta Sans"','sans-serif']},
+colors:{pink:{50:'#fdf2f8',100:'#fce7f3',200:'#fbcfe8',300:'#f9a8d4',400:'#f472b6',500:'#ec4899',600:'#db2777'},
+gold:{100:'#fef9e7',200:'#fef3c7',300:'#f0d898',400:'#e8c860',500:'#d4aa3a',600:'#b8921e'},
+sky:{50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9'},
+cream:'#fefcf9'}}}}
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<link rel="stylesheet" href="assets/css/light3d.css">
+<style>
+*{font-family:'Plus Jakarta Sans',sans-serif}
+h1,h2,h3,.font-display{font-family:'Playfair Display',serif}
+.dropdown-menu-light{opacity:0;visibility:hidden;transform:translateY(6px);transition:all .22s cubic-bezier(.16,1,.3,1)}
+.dropdown:hover .dropdown-menu-light,.dropdown:focus-within .dropdown-menu-light{opacity:1;visibility:visible;transform:translateY(0)}
+#mobile-menu{transform:translateX(100%);transition:transform .38s cubic-bezier(.16,1,.3,1)}
+#mobile-menu.open{transform:translateX(0)}
+.lift-card{transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s ease}
+.lift-card:hover{transform:translateY(-8px) scale(1.01);box-shadow:0 24px 60px rgba(244,114,182,.2),0 8px 20px rgba(0,0,0,.06)}
+.ann-card-light{transition:transform .3s ease,background .3s ease,box-shadow .3s ease}
+.ann-card-light:hover{transform:translateX(8px);background:rgba(253,242,248,.9)!important;box-shadow:4px 0 0 0 #f472b6}
+[data-parallax]{will-change:transform}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scroll-dot{0%,100%{transform:translateY(0);opacity:1}80%{transform:translateY(6px);opacity:0}}
+</style>
 </head>
-<body class="bg-black text-white overflow-x-hidden">
+<body class="light-mode bg-cream overflow-x-hidden">
 
-<!-- ============================================================
-     NAVBAR
-============================================================ -->
-<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
-  <div class="glass border-b border-white/[0.08]" id="navbar-inner">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16 md:h-20">
+<!-- Three.js canvas -->
+<canvas id="three-canvas"></canvas>
 
-        <!-- Logo & Brand -->
-        <a href="index.php" class="flex items-center gap-3 group flex-shrink-0">
-          <?php if ($logo): ?>
-            <img src="<?= e($logo) ?>" alt="Logo" class="w-10 h-10 object-contain transition-transform group-hover:scale-110">
-          <?php else: ?>
-            <div class="w-10 h-10 rounded-xl glass-strong flex items-center justify-center transition-all group-hover:scale-110 group-hover:border-gold-400/40">
-              <span class="text-gold-400 font-display font-bold text-lg leading-none">ص</span>
-            </div>
-          <?php endif; ?>
-          <div class="leading-tight">
-            <div class="text-white font-medium text-sm tracking-wide">SD Muhammadiyah 1</div>
-            <div class="text-gold-400 text-[10px] tracking-[0.18em] uppercase font-light">Gentasari · Cilacap</div>
-          </div>
-        </a>
-
-        <!-- Desktop Navigation -->
-        <div class="hidden lg:flex items-center gap-8">
-
-          <a href="index.php" class="nav-link active">Beranda</a>
-
-          <!-- Dropdown: Profil -->
-          <div class="dropdown relative">
-            <button class="nav-link flex items-center gap-1">
-              Profil
-              <i data-lucide="chevron-down" class="w-3 h-3 opacity-60 mt-0.5 transition-transform duration-200 group-hover:rotate-180"></i>
-            </button>
-            <div class="dropdown-menu absolute top-full left-1/2 -translate-x-1/2 mt-3 w-48">
-              <div class="glass-dark rounded-2xl overflow-hidden py-1 shadow-2xl">
-                <a href="pages/profile/sekolah.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all">
-                  <i data-lucide="building-2" class="w-4 h-4 text-gold-400"></i> Profil Sekolah
-                </a>
-                <a href="pages/profile/guru-staff.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all">
-                  <i data-lucide="users" class="w-4 h-4 text-gold-400"></i> Guru &amp; Staff
-                </a>
-                <a href="pages/profile/siswa.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all">
-                  <i data-lucide="graduation-cap" class="w-4 h-4 text-gold-400"></i> Siswa
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dropdown: Media -->
-          <div class="dropdown relative">
-            <button class="nav-link flex items-center gap-1">
-              Media
-              <i data-lucide="chevron-down" class="w-3 h-3 opacity-60 mt-0.5"></i>
-            </button>
-            <div class="dropdown-menu absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44">
-              <div class="glass-dark rounded-2xl overflow-hidden py-1 shadow-2xl">
-                <a href="pages/media/galeri.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all">
-                  <i data-lucide="image" class="w-4 h-4 text-gold-400"></i> Galeri Foto
-                </a>
-                <a href="pages/media/fasilitas.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all">
-                  <i data-lucide="layout-grid" class="w-4 h-4 text-gold-400"></i> Fasilitas
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dropdown: Aktivitas -->
-          <div class="dropdown relative">
-            <button class="nav-link flex items-center gap-1">
-              Aktivitas
-              <i data-lucide="chevron-down" class="w-3 h-3 opacity-60 mt-0.5"></i>
-            </button>
-            <div class="dropdown-menu absolute top-full left-1/2 -translate-x-1/2 mt-3 w-48">
-              <div class="glass-dark rounded-2xl overflow-hidden py-1 shadow-2xl">
-                <a href="pages/aktivitas/ekskul.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all">
-                  <i data-lucide="sparkles" class="w-4 h-4 text-gold-400"></i> Ekstrakurikuler
-                </a>
-                <a href="pages/aktivitas/pengumuman.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all">
-                  <i data-lucide="bell" class="w-4 h-4 text-gold-400"></i> Pengumuman
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dropdown: Interaksi -->
-          <div class="dropdown relative">
-            <button class="nav-link flex items-center gap-1">
-              Interaksi
-              <i data-lucide="chevron-down" class="w-3 h-3 opacity-60 mt-0.5"></i>
-            </button>
-            <div class="dropdown-menu absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44">
-              <div class="glass-dark rounded-2xl overflow-hidden py-1 shadow-2xl">
-                <a href="pages/interaksi/pengaduan.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all">
-                  <i data-lucide="message-square-warning" class="w-4 h-4 text-gold-400"></i> Pengaduan
-                </a>
-                <a href="pages/interaksi/kontak.php" class="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all">
-                  <i data-lucide="mail" class="w-4 h-4 text-gold-400"></i> Kontak
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- CTA -->
-          <a href="pages/interaksi/pengaduan.php"
-             class="ml-2 px-5 py-2.5 rounded-full text-xs tracking-widest uppercase font-medium
-                    border border-gold-400/60 text-gold-300 
-                    hover:bg-gold-500/20 hover:border-gold-300 hover:text-white
-                    transition-all duration-300 hover:shadow-[0_0_20px_rgba(212,170,58,0.3)]">
-            Pengaduan
-          </a>
+<!-- ─── NAVBAR ─────────────────────────────────────────── -->
+<nav id="navbar" class="navbar-light">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16 md:h-20">
+      <a href="index.php" class="flex items-center gap-3 group flex-shrink-0">
+        <?php if($logoSrc): ?>
+        <img src="<?=e($logoSrc)?>" alt="Logo" class="w-10 h-10 object-contain group-hover:scale-110 transition-transform">
+        <?php else: ?>
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform"
+             style="background:linear-gradient(135deg,#fbcfe8,#fef3c7);border:1px solid rgba(244,114,182,.3)">
+          <span style="font-family:'Playfair Display',serif;color:#be185d;font-weight:700;font-size:1.1rem">ص</span>
         </div>
+        <?php endif; ?>
+        <div><div class="text-sm font-semibold text-gray-800">SD Muhammadiyah 1</div>
+        <div class="text-[10px] tracking-widest uppercase font-medium text-pink-400">Gentasari · Cilacap</div></div>
+      </a>
 
-        <!-- Hamburger (mobile) -->
-        <button id="hamburger" aria-label="Menu" 
-                class="lg:hidden w-10 h-10 rounded-xl glass flex items-center justify-center transition-all hover:bg-white/15">
-          <i data-lucide="menu" class="w-5 h-5" id="ham-icon"></i>
-        </button>
+      <div class="hidden lg:flex items-center gap-8">
+        <a href="index.php" class="nav-link-light active">Beranda</a>
+
+        <?php $dropdowns=[
+          ['Profil',[['pages/profile/sekolah.php','building-2','Profil Sekolah'],['pages/profile/guru-staff.php','users','Guru &amp; Staff'],['pages/profile/siswa.php','graduation-cap','Siswa']]],
+          ['Media',[['pages/media/galeri.php','image','Galeri Foto'],['pages/media/fasilitas.php','layout-grid','Fasilitas']]],
+          ['Aktivitas',[['pages/aktivitas/ekskul.php','sparkles','Ekstrakurikuler'],['pages/aktivitas/pengumuman.php','bell','Pengumuman']]],
+          ['Interaksi',[['pages/interaksi/pengaduan.php','message-square-warning','Pengaduan'],['pages/interaksi/kontak.php','mail','Kontak']]],
+        ];
+        foreach($dropdowns as [$label,$links]): ?>
+        <div class="dropdown relative">
+          <button class="nav-link-light flex items-center gap-1"><?=$label?> <i data-lucide="chevron-down" class="w-3 h-3 opacity-50 mt-0.5"></i></button>
+          <div class="dropdown-menu-light absolute top-full left-1/2 -translate-x-1/2 mt-3 w-48">
+            <div class="rounded-2xl overflow-hidden shadow-xl py-1" style="background:rgba(255,255,255,.94);backdrop-filter:blur(20px);border:1px solid rgba(244,114,182,.15)">
+              <?php foreach($links as $l): ?>
+              <a href="<?=$l[0]?>" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:text-pink-600 hover:bg-pink-50 transition-all">
+                <i data-lucide="<?=$l[1]?>" class="w-4 h-4 text-pink-400"></i><?=$l[2]?>
+              </a>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        </div>
+        <?php endforeach; ?>
+
+        <a href="pages/interaksi/pengaduan.php" class="btn-primary-light !px-5 !py-2.5 !text-xs ml-2">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i> Pengaduan
+        </a>
       </div>
+
+      <button id="hamburger" class="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center"
+              style="background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.2)">
+        <i data-lucide="menu" class="w-5 h-5 text-pink-500"></i>
+      </button>
     </div>
   </div>
 </nav>
 
-<!-- Mobile Slide Menu -->
-<div id="mobile-menu" class="fixed inset-y-0 right-0 w-80 z-[60] glass-dark shadow-2xl flex flex-col">
-  <div class="flex items-center justify-between px-6 py-5 border-b border-white/10">
-    <span class="font-display text-xl text-gold-300">Menu</span>
-    <button id="close-menu" class="w-9 h-9 rounded-xl glass flex items-center justify-center hover:bg-white/15 transition-all">
-      <i data-lucide="x" class="w-4 h-4"></i>
-    </button>
+<!-- Mobile Menu -->
+<div id="mobile-menu" class="fixed inset-y-0 right-0 w-80 z-[60] flex flex-col shadow-2xl"
+     style="background:rgba(255,255,255,.97);backdrop-filter:blur(24px);border-left:1px solid rgba(244,114,182,.15)">
+  <div class="flex items-center justify-between px-6 py-5" style="border-bottom:1px solid rgba(244,114,182,.12)">
+    <span style="font-family:'Playfair Display',serif;font-size:1.25rem;color:#be185d">Menu</span>
+    <button id="close-menu" class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(244,114,182,.1)">
+      <i data-lucide="x" class="w-4 h-4 text-pink-500"></i></button>
   </div>
   <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-1">
-    <a href="index.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white bg-white/10 text-sm font-medium">
-      <i data-lucide="home" class="w-4 h-4 text-gold-400"></i> Beranda
+    <?php foreach([['index.php','home','Beranda'],['pages/profile/sekolah.php','building-2','Profil Sekolah'],['pages/profile/guru-staff.php','users','Guru & Staff'],['pages/profile/siswa.php','graduation-cap','Siswa'],['pages/media/galeri.php','image','Galeri Foto'],['pages/media/fasilitas.php','layout-grid','Fasilitas'],['pages/aktivitas/ekskul.php','sparkles','Ekstrakurikuler'],['pages/aktivitas/pengumuman.php','bell','Pengumuman'],['pages/interaksi/pengaduan.php','message-square-warning','Pengaduan'],['pages/interaksi/kontak.php','mail','Kontak Kami']] as $l): ?>
+    <a href="<?=$l[0]?>" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:text-pink-600 hover:bg-pink-50 transition-all font-medium">
+      <i data-lucide="<?=$l[1]?>" class="w-4 h-4 text-pink-400"></i><?=$l[2]?>
     </a>
-    <!-- Profile Group -->
-    <div class="px-4 py-2 text-[10px] tracking-widest uppercase text-white/30 font-light mt-2">Profil</div>
-    <a href="pages/profile/sekolah.php"    class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 hover:text-white hover:bg-white/10 transition-all text-sm"><i data-lucide="building-2" class="w-4 h-4 text-gold-400/70"></i> Profil Sekolah</a>
-    <a href="pages/profile/guru-staff.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 hover:text-white hover:bg-white/10 transition-all text-sm"><i data-lucide="users" class="w-4 h-4 text-gold-400/70"></i> Guru &amp; Staff</a>
-    <a href="pages/profile/siswa.php"      class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 hover:text-white hover:bg-white/10 transition-all text-sm"><i data-lucide="graduation-cap" class="w-4 h-4 text-gold-400/70"></i> Siswa</a>
-    <!-- Media Group -->
-    <div class="px-4 py-2 text-[10px] tracking-widest uppercase text-white/30 font-light mt-2">Media</div>
-    <a href="pages/media/galeri.php"    class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 hover:text-white hover:bg-white/10 transition-all text-sm"><i data-lucide="image" class="w-4 h-4 text-gold-400/70"></i> Galeri Foto</a>
-    <a href="pages/media/fasilitas.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 hover:text-white hover:bg-white/10 transition-all text-sm"><i data-lucide="layout-grid" class="w-4 h-4 text-gold-400/70"></i> Fasilitas</a>
-    <!-- Aktivitas Group -->
-    <div class="px-4 py-2 text-[10px] tracking-widest uppercase text-white/30 font-light mt-2">Aktivitas</div>
-    <a href="pages/aktivitas/ekskul.php"       class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 hover:text-white hover:bg-white/10 transition-all text-sm"><i data-lucide="sparkles" class="w-4 h-4 text-gold-400/70"></i> Ekstrakurikuler</a>
-    <a href="pages/aktivitas/pengumuman.php"   class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 hover:text-white hover:bg-white/10 transition-all text-sm"><i data-lucide="bell" class="w-4 h-4 text-gold-400/70"></i> Pengumuman</a>
-    <!-- Interaksi Group -->
-    <div class="px-4 py-2 text-[10px] tracking-widest uppercase text-white/30 font-light mt-2">Interaksi</div>
-    <a href="pages/interaksi/pengaduan.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 hover:text-white hover:bg-white/10 transition-all text-sm"><i data-lucide="message-square-warning" class="w-4 h-4 text-gold-400/70"></i> Pengaduan</a>
-    <a href="pages/interaksi/kontak.php"    class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 hover:text-white hover:bg-white/10 transition-all text-sm"><i data-lucide="mail" class="w-4 h-4 text-gold-400/70"></i> Kontak Kami</a>
+    <?php endforeach; ?>
   </nav>
-  <div class="px-4 pb-6">
-    <a href="admin/login.php" class="block text-center py-3 rounded-xl border border-gold-400/50 text-gold-300 text-sm tracking-widest uppercase hover:bg-gold-500/20 transition-all">
-      Panel Admin
-    </a>
-  </div>
 </div>
-<div id="menu-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden backdrop-blur-sm"></div>
+<div id="menu-overlay" class="fixed inset-0 bg-black/20 z-[55] hidden backdrop-blur-sm"></div>
 
-<!-- ============================================================
-     HERO SECTION
-============================================================ -->
-<section class="hero-bg relative min-h-screen flex flex-col" id="hero">
+<div class="page-wrapper">
 
-  <!-- Ambient glow orbs -->
-  <div class="absolute inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-gold-500/10 blur-[100px] animate-pulse-slow"></div>
-    <div class="absolute bottom-20 -left-20 w-80 h-80 rounded-full bg-blue-500/8 blur-[80px] animate-pulse-slow" style="animation-delay:2s"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-white/[0.02] blur-[120px]"></div>
+<!-- ─── HERO ─────────────────────────────────────────────── -->
+<section class="hero-light relative" id="hero" style="min-height:100svh">
+  <?php if ($heroImageUrl): ?>
+  <div style="position:absolute;inset:0;background:url('<?=e($heroImageUrl)?>') center/cover no-repeat;opacity:.08;pointer-events:none;z-index:0"></div>
+  <?php endif; ?>
+  <div class="grid-lines"></div>
+  <div class="orb orb-pink w-96 h-96 orb-parallax animate-float-y" data-speed="0.12" style="top:-10%;right:-5%"></div>
+  <div class="orb orb-gold w-64 h-64 orb-parallax animate-float-diagonal" data-speed="0.08" style="bottom:15%;left:-5%;animation-delay:1.5s"></div>
+  <div class="orb orb-sky w-72 h-72 orb-parallax animate-float-y" data-speed="0.18" style="top:45%;right:22%;opacity:.5;animation-delay:3s"></div>
+
+  <!-- Floating geo shapes -->
+  <div class="absolute pointer-events-none" data-parallax="0.14" style="top:22%;left:7%">
+    <div class="w-12 h-12 rounded-xl border-2 border-pink-300 rotate-12 animate-float-y opacity-40" style="animation-delay:.5s"></div>
+  </div>
+  <div class="absolute pointer-events-none" data-parallax="0.24" style="top:65%;right:7%">
+    <div class="w-8 h-8 rounded-full border-2 border-gold-400 animate-float-diagonal opacity-40" style="animation-delay:1s"></div>
+  </div>
+  <div class="absolute pointer-events-none" data-parallax="0.19" style="bottom:28%;left:18%">
+    <div class="w-6 h-6 rotate-45 border-2 border-sky-400 animate-float-y opacity-35" style="animation-delay:2s"></div>
   </div>
 
-  <!-- Geometric accents -->
-  <div class="absolute top-32 right-12 w-px h-32 bg-gradient-to-b from-transparent via-gold-400/40 to-transparent hidden lg:block"></div>
-  <div class="absolute top-32 right-12 w-32 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent hidden lg:block"></div>
-  <div class="absolute bottom-40 left-12 w-px h-32 bg-gradient-to-b from-transparent via-white/20 to-transparent hidden lg:block"></div>
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-28 pb-36"
+       style="min-height:100svh;display:flex;align-items:center">
+    <div class="grid lg:grid-cols-2 gap-16 items-center w-full">
 
-  <!-- Main hero content -->
-  <div class="flex-1 flex items-center relative">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-28 pb-16">
-      <div class="max-w-3xl">
-
-        <!-- Eyebrow -->
-        <div class="flex items-center gap-3 mb-6 animate-fade-up" style="animation-delay:.1s">
-          <div class="h-px w-12 bg-gold-400/70"></div>
-          <span class="text-gold-300 text-xs tracking-[0.25em] uppercase font-light">Akreditasi A · Est. <?= e($profile['tahun_berdiri'] ?? '1962') ?></span>
-          <div class="h-px w-6 bg-gold-400/40"></div>
+      <!-- Text -->
+      <div>
+        <div class="flex items-center gap-3 mb-6" style="opacity:0;animation:fadeUp .8s .1s ease forwards">
+          <span class="section-label section-label-pink"><i data-lucide="star" class="w-3 h-3"></i> Akreditasi A · Est. <?=e($profile['tahun_berdiri']??'1962')?></span>
         </div>
-
-        <!-- Main heading -->
-        <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-light leading-[1.05] mb-4 animate-fade-up" style="animation-delay:.2s">
-          <span class="text-white"><?= e($heroTitle) ?></span>
+        <h1 class="font-display font-bold text-gray-800 mb-2" style="font-size:clamp(2.4rem,6vw,4.8rem);line-height:1.05;opacity:0;animation:fadeUp .8s .2s ease forwards">
+          <?=e($heroTitle)?>
         </h1>
-        <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-light leading-[1.05] mb-8 animate-fade-up" style="animation-delay:.3s">
-          <em class="text-gold-shimmer not-italic">Terpercaya.</em>
+        <h1 class="font-display font-bold mb-8" style="font-size:clamp(2.4rem,6vw,4.8rem);line-height:1.05;opacity:0;animation:fadeUp .8s .3s ease forwards">
+          <em class="text-gradient-pink-gold not-italic">Terpercaya.</em>
         </h1>
-
-        <!-- Sub-copy -->
-        <p class="text-white/60 text-base sm:text-lg font-light leading-relaxed max-w-xl mb-10 animate-fade-up" style="animation-delay:.4s">
-          <?= e($heroSub) ?> — di bawah naungan <span class="text-white/85">Persyarikatan Muhammadiyah</span> sejak <?= e($profile['tahun_berdiri'] ?? '1962') ?>.
+        <p class="text-gray-500 text-lg font-light leading-relaxed max-w-lg mb-10"
+           style="opacity:0;animation:fadeUp .8s .4s ease forwards">
+          <?=e($heroSub)?> — di bawah naungan <span class="text-gray-700 font-semibold">Persyarikatan Muhammadiyah</span>.
         </p>
-
-        <!-- CTAs -->
-        <div class="flex flex-wrap gap-4 animate-fade-up" style="animation-delay:.5s">
-          <a href="pages/profile/sekolah.php"
-             class="group inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl
-                    bg-gold-500 hover:bg-gold-400 text-black font-medium text-sm tracking-wide
-                    transition-all duration-300 hover:scale-105 hover:shadow-[0_10px_40px_rgba(212,170,58,0.4)]">
-            Kenali Kami
-            <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
+        <div class="flex flex-wrap gap-4" style="opacity:0;animation:fadeUp .8s .5s ease forwards">
+          <a href="pages/profile/sekolah.php" class="btn-primary-light group">
+            Kenali Kami <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
           </a>
-          <a href="pages/interaksi/kontak.php"
-             class="group inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl
-                    glass border-white/20 text-white/85 hover:text-white font-light text-sm tracking-wide
-                    transition-all duration-300 hover:bg-white/15 hover:scale-105">
-            Hubungi Kami
-            <i data-lucide="send" class="w-4 h-4 opacity-60 group-hover:opacity-100 transition-all group-hover:translate-x-1"></i>
+          <a href="pages/interaksi/kontak.php" class="btn-outline-light">
+            <i data-lucide="phone" class="w-4 h-4"></i> Hubungi Kami
           </a>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- STATS BAR -->
-  <div class="relative w-full pb-0 animate-fade-up" style="animation-delay:.65s">
-    <div class="glass border-t border-white/10">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-white/10">
-
-          <?php
-          $stats = [
-            ['value' => $statStudents, 'label' => 'Siswa Aktif',    'icon' => 'users',         'suffix' => '+'],
-            ['value' => $statTeachers, 'label' => 'Tenaga Pendidik','icon' => 'graduation-cap', 'suffix' => ''],
-            ['value' => $statYears,    'label' => 'Tahun Berdiri',  'icon' => 'calendar',       'suffix' => 'Thn'],
-            ['value' => $statEkskul,   'label' => 'Ekstrakurikuler','icon' => 'sparkles',        'suffix' => ''],
-          ];
-          foreach ($stats as $i => $s): ?>
-          <div class="stat-card flex items-center gap-4 px-6 py-6 group cursor-default <?= $i < 2 ? 'col-span-1' : 'col-span-1' ?>">
-            <div class="w-11 h-11 rounded-xl glass-strong flex items-center justify-center flex-shrink-0 group-hover:border-gold-400/40 transition-all">
-              <i data-lucide="<?= e($s['icon']) ?>" class="w-5 h-5 text-gold-400"></i>
-            </div>
-            <div>
-              <div class="font-display text-2xl lg:text-3xl font-light text-white leading-none">
-                <?= e($s['value']) ?><span class="text-gold-400 text-lg ml-0.5"><?= e($s['suffix']) ?></span>
-              </div>
-              <div class="text-white/45 text-xs tracking-wide mt-1"><?= e($s['label']) ?></div>
+      <!-- 3D Cards Stack -->
+      <div class="relative hidden lg:block" style="height:440px;opacity:0;animation:fadeUp 1s .55s ease forwards">
+        <!-- back -->
+        <div class="tilt-card absolute" style="width:280px;top:60px;left:90px;transform:rotate(-7deg)">
+          <div class="tilt-inner glass-card glass-card-sky p-5 rounded-2xl">
+            <div class="tilt-shine"></div>
+            <div class="icon-badge icon-badge-sky mb-3"><i data-lucide="graduation-cap" class="w-5 h-5"></i></div>
+            <p class="text-sky-700 font-semibold text-sm">Program Unggulan</p>
+            <p class="text-gray-400 text-xs mt-1">Kurikulum integratif islami</p>
+          </div>
+        </div>
+        <!-- mid -->
+        <div class="tilt-card absolute" style="width:300px;top:100px;left:10px;transform:rotate(4deg)">
+          <div class="tilt-inner glass-card glass-card-gold p-5 rounded-2xl">
+            <div class="tilt-shine"></div>
+            <div class="icon-badge icon-badge-gold mb-3"><i data-lucide="trophy" class="w-5 h-5"></i></div>
+            <p class="text-yellow-700 font-semibold text-sm">Prestasi Nasional</p>
+            <p class="text-gray-400 text-xs mt-1">Juara olimpiade sains &amp; seni</p>
+          </div>
+        </div>
+        <!-- front -->
+        <div class="tilt-card absolute" style="width:320px;top:5px;left:45px">
+          <div class="tilt-inner glass-card p-6 rounded-2xl" style="box-shadow:0 20px 60px rgba(244,114,182,.28)">
+            <div class="tilt-shine"></div>
+            <div class="icon-badge icon-badge-pink mb-4"><i data-lucide="heart" class="w-5 h-5"></i></div>
+            <p class="font-display text-xl font-semibold text-gray-800 mb-1"><?=e($siteName)?></p>
+            <p class="text-gray-400 text-xs mb-4">Gentasari, Kroya, Cilacap</p>
+            <div class="cyber-line mb-3"></div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-400">Siswa Aktif</span>
+              <span class="font-display font-bold text-2xl text-gradient-pink-gold"><?=e($statStudents)?>+</span>
             </div>
           </div>
-          <?php endforeach; ?>
-
         </div>
+        <!-- floating labels -->
+        <div class="absolute animate-float-y" style="top:0;right:0;animation-delay:.8s">
+          <div class="glass-card px-3 py-2 rounded-full text-xs font-bold text-pink-600" style="background:rgba(253,242,248,.95);border-color:rgba(244,114,182,.25)">✦ Akreditasi A</div>
+        </div>
+        <div class="absolute animate-float-diagonal" style="bottom:50px;right:5px;animation-delay:2s">
+          <div class="glass-card px-3 py-2 rounded-full text-xs font-bold text-sky-600" style="background:rgba(240,249,255,.95);border-color:rgba(56,189,248,.25)">⭐ Pilihan Keluarga</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="absolute bottom-0 left-0 right-0 z-10"
+       style="background:rgba(255,255,255,.75);backdrop-filter:blur(20px);border-top:1px solid rgba(244,114,182,.12)">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-pink-100">
+        <?php foreach([
+          ['users',         $statStudents,'Siswa Aktif',    '+'],
+          ['graduation-cap',$statTeachers,'Tenaga Pendidik',''],
+          ['calendar',      $statYears,   'Tahun Berdiri',  ' Thn'],
+          ['sparkles',      $statEkskul,  'Ekstrakurikuler',''],
+        ] as $s): ?>
+        <div class="flex items-center gap-4 px-6 py-5 group cursor-default hover:bg-pink-50/60 transition-colors">
+          <div class="icon-badge icon-badge-pink group-hover:scale-110 transition-transform flex-shrink-0">
+            <i data-lucide="<?=$s[0]?>" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="font-display font-bold text-2xl text-gray-800 leading-none">
+              <span data-count="<?=e($s[1])?>">0</span><span class="text-pink-400"><?=e($s[3])?></span>
+            </div>
+            <div class="text-gray-400 text-xs mt-1"><?=e($s[2])?></div>
+          </div>
+        </div>
+        <?php endforeach; ?>
       </div>
     </div>
   </div>
 
-  <!-- Scroll indicator -->
-  <div class="absolute bottom-28 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40 animate-float">
-    <span class="text-[10px] tracking-[0.2em] uppercase text-white/60">Scroll</span>
-    <i data-lucide="chevrons-down" class="w-4 h-4 text-white/60"></i>
+  <!-- Scroll hint -->
+  <div class="absolute bottom-28 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10" style="opacity:.4;animation:fadeUp 1s 1s ease forwards">
+    <span class="text-[10px] tracking-widest uppercase text-gray-400">Scroll</span>
+    <div class="w-5 h-8 rounded-full border-2 border-pink-300 flex justify-center pt-1.5">
+      <div class="w-1 h-2 bg-pink-400 rounded-full" style="animation:scroll-dot 2s ease-in-out infinite"></div>
+    </div>
   </div>
 </section>
 
-<!-- ============================================================
-     VISI & MISI SECTION
-============================================================ -->
+<!-- ─── VISI MISI ──────────────────────────────────────── -->
 <?php if (!empty($profile['visi']) || !empty($profile['misi'])): ?>
-<section class="relative bg-gradient-to-b from-black via-zinc-950 to-black py-28 overflow-hidden">
-
-  <div class="absolute inset-0 pointer-events-none">
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-gold-400/40 to-transparent"></div>
-  </div>
-
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Section header -->
-    <div class="text-center mb-20 reveal">
-      <div class="flex items-center justify-center gap-4 ornament-divider mb-5">
-        <span class="text-gold-400 text-xs tracking-[0.3em] uppercase font-light px-4">Visi & Misi</span>
+<section class="depth-section py-28 relative overflow-hidden" data-burst
+         style="background:linear-gradient(180deg,#fefcf9 0%,#fdf2f8 100%)">
+  <div class="orb orb-pink w-72 h-72 orb-parallax opacity-30" data-speed="0.06" style="top:-5%;right:5%"></div>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="text-center mb-16">
+      <div class="flex items-center justify-center gap-4 mb-5 reveal-fade">
+        <div class="ornament-line"></div>
+        <span class="section-label section-label-pink">Landasan Kami</span>
+        <div class="ornament-line"></div>
       </div>
-      <h2 class="font-display text-4xl lg:text-5xl font-light text-white">Landasan <em class="text-gold-shimmer not-italic">Kami</em></h2>
+      <h2 class="font-display font-bold text-gray-800 reveal-heading" style="font-size:clamp(2rem,4vw,3.5rem)">
+        Visi &amp; <em class="text-gradient-pink-gold not-italic">Misi</em>
+      </h2>
     </div>
-
-    <div class="grid lg:grid-cols-1 gap-8">
-      <!-- Visi -->
-      <div class="glass rounded-3xl p-8 lg:p-10 reveal group hover:bg-white/10 transition-all duration-500 hover:-translate-y-1">
-        <div class="flex items-start gap-5">
-          <div class="w-14 h-14 rounded-2xl glass-strong flex items-center justify-center flex-shrink-0 group-hover:border-gold-400/40 transition-all">
-            <i data-lucide="eye" class="w-6 h-6 text-gold-400"></i>
-          </div>
-          <div>
-            <h3 class="font-display text-2xl text-white font-light mb-3">Visi</h3>
-            <p class="text-white/60 font-light leading-relaxed text-sm"><?= nl2br(e($profile['visi'])) ?></p>
-          </div>
-        </div>
-      </div>
-      <!-- Misi -->
-      <div class="glass rounded-3xl p-8 lg:p-10 reveal group hover:bg-white/10 transition-all duration-500 hover:-translate-y-1">
-        <div class="flex items-start gap-5">
-          <div class="w-14 h-14 rounded-2xl glass-strong flex items-center justify-center flex-shrink-0 group-hover:border-gold-400/40 transition-all">
-            <i data-lucide="target" class="w-6 h-6 text-gold-400"></i>
-          </div>
-          <div>
-            <h3 class="font-display text-2xl text-white font-light mb-3">Misi</h3>
-            <p class="text-white/60 font-light leading-relaxed text-sm"><?= nl2br(e($profile['misi'])) ?></p>
+    <div class="grid lg:grid-cols-2 gap-8 stagger-grid">
+      <?php foreach([
+        ['visi','eye','Visi','glass-card-pink','icon-badge-pink','#be185d'],
+        ['misi','target','Misi','glass-card-sky','icon-badge-sky','#0369a1'],
+      ] as $vm): if(empty($profile[$vm[0]])) continue; ?>
+      <div class="tilt-card glass-card <?=$vm[3]?> rounded-3xl p-8 lg:p-10">
+        <div class="tilt-inner">
+          <div class="tilt-shine"></div>
+          <div class="flex items-start gap-5">
+            <div class="icon-badge <?=$vm[4]?> flex-shrink-0 mt-1"><i data-lucide="<?=$vm[1]?>" class="w-5 h-5"></i></div>
+            <div>
+              <h3 class="font-display text-2xl font-semibold mb-3" style="color:<?=$vm[5]?>"><?=$vm[2]?></h3>
+              <p class="text-gray-600 font-light leading-relaxed text-sm"><?=nl2br(e($profile[$vm[0]]))?></p>
+            </div>
           </div>
         </div>
       </div>
+      <?php endforeach; ?>
     </div>
   </div>
 </section>
 <?php endif; ?>
 
-<!-- ============================================================
-     ANNOUNCEMENTS SECTION
-============================================================ -->
-<section class="relative bg-zinc-950 py-28">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
-    <div class="flex items-end justify-between mb-16 reveal">
+<!-- ─── PENGUMUMAN ────────────────────────────────────── -->
+<section class="depth-section py-28 relative" style="background:#fefcf9">
+  <div class="orb orb-gold w-60 h-60 orb-parallax opacity-25" data-speed="0.1" style="bottom:0;left:5%"></div>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="flex items-end justify-between mb-14">
       <div>
-        <div class="flex items-center gap-3 mb-3">
-          <div class="h-px w-8 bg-gold-400/60"></div>
-          <span class="text-gold-400 text-xs tracking-[0.25em] uppercase font-light">Info Terkini</span>
-        </div>
-        <h2 class="font-display text-4xl lg:text-5xl font-light text-white">Pengumuman</h2>
+        <span class="section-label section-label-gold mb-3 inline-flex reveal-fade">Info Terkini</span>
+        <h2 class="font-display font-bold text-gray-800 reveal-heading" style="font-size:clamp(1.8rem,3.5vw,3rem)">Pengumuman</h2>
       </div>
-      <a href="pages/aktivitas/pengumuman.php"
-         class="hidden sm:flex items-center gap-2 text-sm text-white/50 hover:text-gold-300 transition-all group">
-        Lihat Semua
-        <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
+      <a href="pages/aktivitas/pengumuman.php" class="hidden sm:flex items-center gap-2 text-sm font-semibold text-pink-500 hover:text-pink-600 transition-colors group reveal-fade">
+        Lihat Semua <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
       </a>
     </div>
-
-    <?php if (empty($announcements)): ?>
-    <div class="glass rounded-3xl p-12 text-center text-white/30 reveal">
-      <i data-lucide="bell-off" class="w-10 h-10 mx-auto mb-3 opacity-40"></i>
-      <p class="text-sm">Belum ada pengumuman saat ini.</p>
+    <?php if(empty($announcements)): ?>
+    <div class="glass-card rounded-3xl p-16 text-center">
+      <i data-lucide="bell-off" class="w-10 h-10 mx-auto mb-3 text-pink-200"></i>
+      <p class="text-gray-400 text-sm">Belum ada pengumuman saat ini.</p>
     </div>
     <?php else: ?>
-    <div class="space-y-4">
-      <?php foreach ($announcements as $i => $ann):
-        $isNew = isNew($ann['published_at']);
-        $catColor = match($ann['category']) {
-          'penting'   => 'text-red-300 bg-red-500/15 border-red-500/30',
-          'akademik'  => 'text-blue-300 bg-blue-500/15 border-blue-500/30',
-          'kegiatan'  => 'text-green-300 bg-green-500/15 border-green-500/30',
-          default     => 'text-white/50 bg-white/5 border-white/15',
-        };
+    <div class="space-y-4 stagger-grid">
+      <?php foreach($announcements as $i=>$ann):
+        $isNew=isNew($ann['published_at']);
+        $cc=$catLabel[$ann['category']]??'section-label-gold';
       ?>
-      <a href="pages/aktivitas/pengumuman.php?id=<?= $ann['id'] ?>"
-         class="ann-card glass rounded-2xl p-6 flex items-center gap-5 group reveal block"
-         style="animation-delay:<?= $i * 0.08 ?>s">
-
-        <!-- Index number -->
-        <div class="font-display text-3xl text-white/10 font-light w-10 text-center flex-shrink-0 group-hover:text-gold-400/30 transition-colors">
-          <?= str_pad($i + 1, 2, '0', STR_PAD_LEFT) ?>
-        </div>
-
-        <!-- Gold line accent -->
-        <div class="w-px self-stretch bg-gradient-to-b from-gold-400/60 via-gold-400/20 to-transparent flex-shrink-0"></div>
-
-        <div class="flex-1 min-w-0">
-          <div class="flex flex-wrap items-center gap-2 mb-2">
-            <span class="text-[10px] px-2.5 py-0.5 rounded-full border font-light tracking-wide <?= $catColor ?>">
-              <?= ucfirst(e($ann['category'])) ?>
-            </span>
-            <?php if ($isNew): ?>
-            <span class="badge-new text-[10px] px-2.5 py-0.5 rounded-full bg-gold-500/20 border border-gold-400/40 text-gold-300 font-medium tracking-wide">
-              ✦ Terbaru
-            </span>
-            <?php endif; ?>
-            <?php if ($ann['is_pinned']): ?>
-            <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-white/5 border border-white/15 text-white/40 tracking-wide">
-              📌 Disematkan
-            </span>
-            <?php endif; ?>
+      <a href="pages/aktivitas/pengumuman.php?id=<?=$ann['id']?>"
+         class="ann-card-light glass-card block rounded-2xl p-5 reveal-fade" style="animation-delay:<?=$i*.08?>s">
+        <div class="flex items-center gap-5">
+          <div class="font-display text-3xl text-pink-100 font-bold w-10 text-center flex-shrink-0"><?=str_pad($i+1,2,'0',STR_PAD_LEFT)?></div>
+          <div class="w-px self-stretch" style="background:linear-gradient(180deg,#f9a8d4,#e8c860)"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1.5">
+              <span class="section-label <?=$cc?>"><?=ucfirst(e($ann['category']))?></span>
+              <?php if($isNew): ?><span class="badge-new-light">✦ Terbaru</span><?php endif; ?>
+              <?php if($ann['is_pinned']): ?><span class="section-label section-label-gold">📌 Pin</span><?php endif; ?>
+            </div>
+            <h3 class="text-gray-700 font-semibold text-sm line-clamp-1"><?=e($ann['title'])?></h3>
           </div>
-          <h3 class="text-white/85 font-medium text-sm group-hover:text-white transition-colors line-clamp-1">
-            <?= e($ann['title']) ?>
-          </h3>
-        </div>
-
-        <div class="flex-shrink-0 text-right">
-          <div class="text-white/30 text-xs"><?= date('d M Y', strtotime($ann['published_at'])) ?></div>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-white/20 group-hover:text-gold-400 transition-all mt-1 ml-auto group-hover:translate-x-1"></i>
+          <div class="flex-shrink-0 text-right">
+            <div class="text-gray-400 text-xs"><?=date('d M Y',strtotime($ann['published_at']))?></div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-pink-300 ml-auto mt-1"></i>
+          </div>
         </div>
       </a>
       <?php endforeach; ?>
@@ -633,29 +367,85 @@ $siteName  = $profile['school_name'] ?? APP_NAME;
   </div>
 </section>
 
-<!-- ============================================================
-     FACILITIES SECTION
-============================================================ -->
-<?php if (!empty($facilities)): ?>
-<section class="relative bg-gradient-to-b from-zinc-950 to-black py-28">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
-    <div class="text-center mb-16 reveal">
-      <div class="flex items-center justify-center gap-4 ornament-divider mb-5">
-        <span class="text-gold-400 text-xs tracking-[0.3em] uppercase font-light px-4">Sarana & Prasarana</span>
-      </div>
-      <h2 class="font-display text-4xl lg:text-5xl font-light text-white">Fasilitas <em class="text-gold-shimmer not-italic">Unggulan</em></h2>
+<!-- ─── FASILITAS ─────────────────────────────────────── -->
+<?php if(!empty($facilities)): ?>
+<section class="depth-section py-28 relative overflow-hidden"
+         style="background:linear-gradient(135deg,#fdf2f8 0%,#fef9e7 50%,#f0f9ff 100%)">
+  <div class="orb orb-sky w-64 h-64 orb-parallax opacity-30" data-speed="0.15" style="top:10%;right:5%"></div>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="text-center mb-16">
+      <span class="section-label section-label-sky mb-4 inline-flex reveal-fade">Sarana &amp; Prasarana</span>
+      <h2 class="font-display font-bold text-gray-800 reveal-heading" style="font-size:clamp(1.8rem,3.5vw,3rem)">
+        Fasilitas <em class="text-gradient-sky-pink not-italic">Unggulan</em>
+      </h2>
     </div>
-
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <?php foreach ($facilities as $i => $f): ?>
-      <div class="glass rounded-2xl p-5 text-center group hover:bg-white/12 hover:-translate-y-1.5 transition-all duration-300 reveal"
-           style="animation-delay:<?= $i * 0.06 ?>s">
-        <div class="w-12 h-12 rounded-xl glass-strong mx-auto flex items-center justify-center mb-3 group-hover:border-gold-400/40 transition-all">
-          <i data-lucide="<?= e($f['icon'] ?? 'square') ?>" class="w-5 h-5 text-gold-400"></i>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 stagger-grid">
+      <?php $fColors=['baik'=>'icon-badge-sky','cukup'=>'icon-badge-gold'];
+      foreach($facilities as $i=>$f): ?>
+      <div class="tilt-card glass-card rounded-2xl p-5 text-center" style="animation-delay:<?=$i*.06?>s">
+        <div class="tilt-inner">
+          <div class="tilt-shine"></div>
+          <div class="<?=$fColors[$f['condition']]??'icon-badge-pink'?> icon-badge mx-auto mb-3">
+            <i data-lucide="<?=e($f['icon']??'square')?>" class="w-5 h-5"></i>
+          </div>
+          <div class="font-display font-bold text-2xl text-gray-800"><?=e($f['count'])?></div>
+          <div class="text-gray-400 text-xs mt-1 leading-tight"><?=e($f['name'])?></div>
         </div>
-        <div class="font-display text-2xl text-white font-light"><?= e($f['count']) ?></div>
-        <div class="text-white/50 text-xs mt-1"><?= e($f['name']) ?></div>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <div class="text-center mt-10 reveal-fade">
+      <a href="pages/media/fasilitas.php" class="btn-outline-light">
+        <i data-lucide="arrow-right" class="w-4 h-4"></i> Lihat Semua Fasilitas
+      </a>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+
+<!-- ─── EKSKUL ────────────────────────────────────────── -->
+<?php if(!empty($ekskuls)): ?>
+<section class="depth-section py-28 relative" style="background:#fefcf9">
+  <div class="orb orb-pink w-72 h-72 orb-parallax opacity-25" data-speed="0.08" style="top:20%;left:-5%"></div>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="flex items-end justify-between mb-14">
+      <div>
+        <span class="section-label section-label-pink mb-3 inline-flex reveal-fade">Pengembangan Diri</span>
+        <h2 class="font-display font-bold text-gray-800 reveal-heading" style="font-size:clamp(1.8rem,3.5vw,3rem)">
+          Ekstra<em class="text-gradient-pink-gold not-italic">kurikuler</em>
+        </h2>
+      </div>
+      <a href="pages/aktivitas/ekskul.php" class="hidden sm:flex items-center gap-2 text-sm font-semibold text-pink-500 hover:text-pink-600 transition-colors group reveal-fade">
+        Lihat Semua <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+      </a>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger-grid">
+      <?php $eColors=['icon-badge-pink','icon-badge-gold','icon-badge-sky'];
+      foreach($ekskuls as $i=>$e): ?>
+      <div class="tilt-card glass-card rounded-2xl overflow-hidden lift-card reveal-fade" style="animation-delay:<?=$i*.07?>s">
+        <div class="tilt-inner h-full">
+          <div class="tilt-shine"></div>
+          <?php if(!empty($e['image'])): ?>
+          <div class="h-40 overflow-hidden"><img src="<?=UPLOAD_URL?>ekskul/<?=htmlspecialchars($e['image'])?>" loading="lazy" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt=""></div>
+          <?php endif; ?>
+          <div class="p-5">
+            <div class="flex items-start gap-3 mb-2">
+              <div class="<?=$eColors[$i%3]?> icon-badge flex-shrink-0">
+                <i data-lucide="<?=e($e['icon']??'star')?>" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-gray-800"><?=e($e['name'])?></h3>
+                <?php if(!empty($e['coach'])): ?><p class="text-gray-400 text-xs">Pembina: <?=e($e['coach'])?></p><?php endif; ?>
+              </div>
+            </div>
+            <?php if(!empty($e['schedule'])): ?>
+            <div class="flex items-center gap-1.5 mt-3 pt-3 border-t border-pink-100">
+              <i data-lucide="clock" class="w-3 h-3 text-pink-300"></i>
+              <span class="text-xs text-gray-400"><?=e($e['schedule'])?></span>
+            </div>
+            <?php endif; ?>
+          </div>
+        </div>
       </div>
       <?php endforeach; ?>
     </div>
@@ -663,96 +453,109 @@ $siteName  = $profile['school_name'] ?? APP_NAME;
 </section>
 <?php endif; ?>
 
-<!-- ============================================================
-     CTA BAND
-============================================================ -->
-<section class="relative py-24 overflow-hidden">
-  <div class="absolute inset-0"
-       style="background: linear-gradient(135deg, rgba(212,170,58,0.08) 0%, rgba(0,0,0,0.98) 40%, rgba(212,170,58,0.05) 100%);">
-  </div>
-  <div class="absolute inset-0 border-y border-gold-400/10"></div>
-
-  <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
-    <div class="font-display text-3xl sm:text-4xl lg:text-5xl font-light text-white mb-6 leading-snug">
-      Bersama kami, <em class="text-gold-shimmer not-italic">buah hati Anda</em><br>
-      akan tumbuh menjadi yang terbaik.
-    </div>
-    <p class="text-white/45 font-light mb-10 text-base">Hubungi kami untuk informasi pendaftaran atau kunjungi sekolah kami secara langsung.</p>
+<!-- ─── CTA BAND ──────────────────────────────────────── -->
+<section class="py-24 relative overflow-hidden reveal-fade"
+         style="background:linear-gradient(135deg,#fce7f3 0%,#fef9e7 50%,#e0f2fe 100%)">
+  <div class="cyber-line absolute top-0 left-0 right-0"></div>
+  <div class="grid-lines opacity-60"></div>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <span class="section-label section-label-pink mb-6 inline-flex">Bergabung Bersama Kami</span>
+    <h2 class="font-display font-bold text-gray-800 mb-5" style="font-size:clamp(1.8rem,4vw,3.2rem);line-height:1.15">
+      Bersama kami, buah hati Anda akan tumbuh menjadi
+      <em class="text-gradient-pink-gold not-italic"> yang terbaik.</em>
+    </h2>
+    <p class="text-gray-500 font-light mb-10 max-w-2xl mx-auto">Hubungi kami untuk informasi penerimaan siswa baru atau kunjungi sekolah kami secara langsung.</p>
     <div class="flex flex-wrap justify-center gap-4">
-      <a href="pages/interaksi/kontak.php"
-         class="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-gold-500 hover:bg-gold-400 text-black font-medium text-sm tracking-wide transition-all duration-300 hover:scale-105 hover:shadow-[0_10px_40px_rgba(212,170,58,0.35)]">
-        <i data-lucide="phone-call" class="w-4 h-4"></i>
-        Hubungi Sekarang
+      <a href="pages/interaksi/kontak.php" class="btn-primary-light">
+        <i data-lucide="phone-call" class="w-4 h-4"></i> Hubungi Sekarang
       </a>
-      <a href="pages/aktivitas/pengumuman.php"
-         class="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl glass border-white/20 text-white/85 hover:text-white font-light text-sm tracking-wide transition-all duration-300 hover:bg-white/12 hover:scale-105">
-        <i data-lucide="newspaper" class="w-4 h-4 opacity-60"></i>
-        Info Terkini
+      <a href="pages/aktivitas/pengumuman.php" class="btn-outline-light">
+        <i data-lucide="newspaper" class="w-4 h-4"></i> Info Terkini
       </a>
     </div>
   </div>
 </section>
 
-<!-- ============================================================
-     FOOTER
-============================================================ -->
-<?php include 'includes/footer.php'; ?>
+<!-- ─── FOOTER ────────────────────────────────────────── -->
+<footer class="footer-light">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div class="lg:col-span-2">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,#fbcfe8,#fef3c7);border:1px solid rgba(244,114,182,.3)">
+            <span style="font-family:'Playfair Display',serif;color:#be185d;font-weight:700;font-size:1rem">ص</span>
+          </div>
+          <div><div class="text-sm font-semibold text-gray-700">SD Muhammadiyah 1</div>
+          <div class="text-[10px] tracking-widest uppercase font-medium text-pink-400">Gentasari · Cilacap</div></div>
+        </div>
+        <p class="text-gray-400 text-sm font-light leading-relaxed max-w-xs">Menjadi sekolah Islam unggulan yang membentuk generasi cerdas berkarakter dan berakhlak mulia.</p>
+        <?php
+        $socials = [
+          'instagram' => $profile['instagram'] ?? '',
+          'facebook'  => $profile['facebook']  ?? '',
+          'youtube'   => $profile['youtube']   ?? '',
+        ];
+        $svgIcons = [
+          'instagram' => '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>',
+          'facebook'  => '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>',
+          'youtube'   => '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>',
+        ];
+        $hasSocial = array_filter($socials);
+        if ($hasSocial): ?>
+        <div class="flex gap-3 mt-5">
+          <?php foreach ($socials as $key => $url): if (!$url) continue; ?>
+          <a href="<?=e($url)?>" target="_blank" rel="noopener noreferrer"
+             class="w-9 h-9 rounded-xl flex items-center justify-center hover:scale-110 transition-all duration-200 text-pink-400 hover:text-pink-600 hover:bg-pink-100"
+             style="background:rgba(244,114,182,.1);border:1px solid rgba(244,114,182,.2)"
+             aria-label="<?=ucfirst($key)?>">
+            <?= $svgIcons[$key] ?>
+          </a>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+      </div>
+      <div>
+        <h4 class="text-xs tracking-widest uppercase font-semibold text-gray-400 mb-5">Navigasi</h4>
+        <ul class="space-y-3">
+          <?php foreach([['pages/profile/sekolah.php','Profil Sekolah'],['pages/profile/guru-staff.php','Guru & Staff'],['pages/media/galeri.php','Galeri Foto'],['pages/aktivitas/pengumuman.php','Pengumuman'],['pages/interaksi/kontak.php','Kontak Kami']] as $l): ?>
+          <li><a href="<?=$l[0]?>" class="text-gray-400 hover:text-pink-500 transition-colors text-sm flex items-center gap-2">
+            <i data-lucide="chevron-right" class="w-3 h-3"></i><?=$l[1]?>
+          </a></li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-xs tracking-widest uppercase font-semibold text-gray-400 mb-5">Kontak</h4>
+        <ul class="space-y-4">
+          <?php if(!empty($profile['address'])): ?><li class="flex gap-3 text-sm text-gray-400"><i data-lucide="map-pin" class="w-4 h-4 text-pink-400 flex-shrink-0 mt-0.5"></i><?=e($profile['address'].', '.($profile['district']??'').', '.($profile['city']??''))?></li><?php endif; ?>
+          <?php if(!empty($profile['phone'])): ?><li class="flex gap-3 text-sm text-gray-400"><i data-lucide="phone" class="w-4 h-4 text-pink-400 flex-shrink-0"></i><?=e($profile['phone'])?></li><?php endif; ?>
+          <?php if(!empty($profile['email'])): ?><li class="flex gap-3 text-sm text-gray-400"><i data-lucide="mail" class="w-4 h-4 text-pink-400 flex-shrink-0"></i><?=e($profile['email'])?></li><?php endif; ?>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4" style="border-top:1px solid rgba(244,114,182,.12)">
+      <p class="text-gray-300 text-xs">&copy; <?=date('Y')?> <?=e($siteName)?>. All rights reserved.</p>
+      <a href="admin/login.php" class="text-gray-300 hover:text-gray-500 text-xs flex items-center gap-1.5 transition-colors">
+        <i data-lucide="lock" class="w-3 h-3"></i> Admin Panel
+      </a>
+    </div>
+  </div>
+</footer>
 
-<!-- ============================================================
-     SCRIPTS
-============================================================ -->
+</div><!-- /page-wrapper -->
+
 <script>
-  // ── Init Lucide icons ──────────────────────────────────────
-  lucide.createIcons();
-
-  // ── Navbar scroll effect ──────────────────────────────────
-  const navbar = document.getElementById('navbar');
-  const navInner = document.getElementById('navbar-inner');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 40) {
-      navInner.style.background = 'rgba(0,0,0,0.85)';
-      navInner.style.backdropFilter = 'blur(24px) saturate(2)';
-    } else {
-      navInner.style.background = '';
-      navInner.style.backdropFilter = '';
-    }
-  }, { passive: true });
-
-  // ── Mobile menu ────────────────────────────────────────────
-  const hamburger   = document.getElementById('hamburger');
-  const closeMenu   = document.getElementById('close-menu');
-  const mobileMenu  = document.getElementById('mobile-menu');
-  const menuOverlay = document.getElementById('menu-overlay');
-
-  function openMenu() {
-    mobileMenu.classList.add('open');
-    menuOverlay.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeMenuFn() {
-    mobileMenu.classList.remove('open');
-    menuOverlay.classList.add('hidden');
-    document.body.style.overflow = '';
-  }
-  hamburger.addEventListener('click', openMenu);
-  closeMenu.addEventListener('click', closeMenuFn);
-  menuOverlay.addEventListener('click', closeMenuFn);
-
-  // ── Scroll reveal ──────────────────────────────────────────
-  const revealEls = document.querySelectorAll('.reveal');
-  const observer  = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-  revealEls.forEach(el => observer.observe(el));
-
-  // ── Re-init icons after dynamic content ───────────────────
-  document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+// Mobile menu
+const hamburger=document.getElementById('hamburger'),closeBtn=document.getElementById('close-menu'),mobileMenu=document.getElementById('mobile-menu'),overlay=document.getElementById('menu-overlay');
+function openMenu(){mobileMenu.classList.add('open');overlay.classList.remove('hidden');document.body.style.overflow='hidden'}
+function closeMenu(){mobileMenu.classList.remove('open');overlay.classList.add('hidden');document.body.style.overflow=''}
+hamburger.addEventListener('click',openMenu);closeBtn.addEventListener('click',closeMenu);overlay.addEventListener('click',closeMenu);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
+// Navbar scroll
+window.addEventListener('scroll',()=>document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>40),{passive:true});
 </script>
-
+<script src="assets/js/animations.js" defer></script>
+<script src="assets/js/scroll3d.js" defer></script>
+<script>document.addEventListener('DOMContentLoaded',()=>lucide.createIcons())</script>
 </body>
 </html>
