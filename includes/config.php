@@ -7,12 +7,14 @@
 define('APP_ENV', 'development'); 
 define('APP_NAME', 'SD Muhammadiyah 1 Gentasari');
 
-// Solusi Auto-Detect URL agar port tidak bentrok
+// ---- Auto-detect APP_URL ----
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
-$host     = $_SERVER['HTTP_HOST']; // Mengambil localhost:8080 secara otomatis
-$baseDir  = '/sd_muhammadiyah';    // Folder proyek Anda di htdocs
+$host     = $_SERVER['HTTP_HOST'] ?? 'localhost'; 
+$baseDir  = '/sd_muhammadiyah';    // Sesuaikan dengan nama folder di htdocs
 
-define('APP_URL', $protocol . "://" . $host . $baseDir);
+if (!defined('APP_URL')) {
+    define('APP_URL', $protocol . "://" . $host . $baseDir);
+}
 define('APP_VERSION', '1.0.0');
 
 // ---- Database ----
@@ -25,7 +27,7 @@ define('DB_CHARSET', 'utf8mb4');
 
 // ---- Paths ----
 define('ROOT_PATH', dirname(__FILE__) . '/');
-define('UPLOAD_PATH', ROOT_PATH . '/../assets/images/uploads/');
+define('UPLOAD_PATH', ROOT_PATH . '../assets/images/uploads/');
 define('UPLOAD_URL',  APP_URL . '/assets/images/uploads/');
 
 // ---- Session ----
@@ -133,13 +135,28 @@ function setting(string $key, string $default = ''): string {
     }
     return $cache[$key] ?? $default;
 }
+
 function uploadFile(array $file, string $dir = ''): string|false {
-    $allowed = ['image/jpeg','image/png','image/gif','image/webp'];
-    if (!in_array($file['type'], $allowed)) return false;
-    if ($file['size'] > 5 * 1024 * 1024) return false; // 5MB
+    // 1. Cek error upload dasar
+    if ($file['error'] !== UPLOAD_ERR_OK) return false;
+
+    // 2. Cek ukuran (Max 5MB)
+    if ($file['size'] > 5 * 1024 * 1024) return false; 
+
+    // 3. Validasi tipe file yang SEBENARNYA (Aman dari spoofing)
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $realMimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+
+    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!in_array($realMimeType, $allowed)) return false;
+
+    // 4. Generate nama file unik
     $ext  = pathinfo($file['name'], PATHINFO_EXTENSION);
     $name = uniqid('img_', true) . '.' . strtolower($ext);
     $dest = UPLOAD_PATH . ($dir ? $dir . '/' : '') . $name;
+
+    // 5. Buat folder jika belum ada lalu pindahkan file
     if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0755, true);
     return move_uploaded_file($file['tmp_name'], $dest) ? $name : false;
 }

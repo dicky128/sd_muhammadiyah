@@ -148,10 +148,17 @@ h1,h2,h3,.font-display{font-family:'Playfair Display',serif}
 <div class="page-wrapper">
 
 <!-- ─── HERO ─────────────────────────────────────────────── -->
-<section class="hero-light relative" id="hero" style="min-height:100svh">
-  <?php if ($heroImageUrl): ?>
-  <div style="position:absolute;inset:0;background:url('<?=e($heroImageUrl)?>') center/cover no-repeat;opacity:.08;pointer-events:none;z-index:0"></div>
-  <?php endif; ?>
+<?php
+// Build hero background style
+if ($heroImageUrl) {
+    // Image uploaded: show with light gradient overlay so text stays readable
+    $heroStyle = "background: linear-gradient(135deg, rgba(253,242,248,0.82) 0%, rgba(254,249,231,0.75) 50%, rgba(240,249,255,0.82) 100%), url('" . e($heroImageUrl) . "') center/cover no-repeat fixed; min-height:100svh";
+} else {
+    // No image: pure gradient fallback
+    $heroStyle = "background: linear-gradient(135deg, #fdf2f8 0%, #fef9e7 50%, #f0f9ff 100%); min-height:100svh";
+}
+?>
+<section class="relative" id="hero" style="<?= $heroStyle ?>">
   <div class="grid-lines"></div>
   <div class="orb orb-pink w-96 h-96 orb-parallax animate-float-y" data-speed="0.12" style="top:-10%;right:-5%"></div>
   <div class="orb orb-gold w-64 h-64 orb-parallax animate-float-diagonal" data-speed="0.08" style="bottom:15%;left:-5%;animation-delay:1.5s"></div>
